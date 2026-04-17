@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>リアルタイム文字起こし＆分析 v1.2.0 | uniLinks CDO</title>
+  <title>リアルタイム文字起こし＆分析 v1.3.0 | uniLinks CDO</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -25,10 +25,6 @@
       --red: #dc2626;
       --purple: #7c3aed;
       --purple-light: #f5f3ff;
-      --speaker-a: #2563eb;
-      --speaker-a-light: #eff6ff;
-      --speaker-b: #d97706;
-      --speaker-b-light: #fffbeb;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,7 +37,6 @@
       line-height: 1.6;
     }
 
-    /* ── ヘッダー ── */
     .header {
       background: var(--white);
       border-bottom: 1px solid var(--border);
@@ -56,10 +51,7 @@
 
     .header-icon { font-size: 22px; }
 
-    .header-title h1 {
-      font-size: 16px;
-      font-weight: 700;
-    }
+    .header-title h1 { font-size: 16px; font-weight: 700; }
 
     .header-title p {
       font-size: 11px;
@@ -78,7 +70,6 @@
       white-space: nowrap;
     }
 
-    /* ── APIキーバー ── */
     .api-bar {
       background: var(--white);
       border-bottom: 1px solid var(--border);
@@ -89,12 +80,7 @@
       flex-wrap: wrap;
     }
 
-    .api-bar label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-sub);
-      white-space: nowrap;
-    }
+    .api-bar label { font-size: 12px; font-weight: 600; color: var(--text-sub); white-space: nowrap; }
 
     .api-bar input {
       padding: 6px 10px;
@@ -108,17 +94,10 @@
 
     .api-bar input:focus { outline: none; border-color: var(--primary); }
 
-    .key-badge {
-      font-size: 11px;
-      padding: 3px 9px;
-      border-radius: 12px;
-      font-weight: 500;
-    }
-
+    .key-badge { font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 500; }
     .key-badge.ok { background: #dcfce7; color: var(--success); }
     .key-badge.ng { background: #fef9c3; color: #92400e; }
 
-    /* ── タブナビ ── */
     .tab-nav {
       background: var(--white);
       border-bottom: 2px solid var(--border);
@@ -149,14 +128,8 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ── コンテナ ── */
-    .container {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: 28px 20px;
-    }
+    .container { max-width: 820px; margin: 0 auto; padding: 28px 20px; }
 
-    /* ── カード ── */
     .card {
       background: var(--white);
       border: 1px solid var(--border);
@@ -166,22 +139,9 @@
       box-shadow: var(--shadow);
     }
 
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .card-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
-    /* ── 録音コントロール ── */
-    .rec-control {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
+    .rec-control { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 
     .btn-record {
       display: inline-flex;
@@ -202,60 +162,6 @@
     .btn-record.stop { background: #374151; color: white; }
     .btn-record.stop:hover { background: #1f2937; }
 
-    /* ── 話者切替ボタン ── */
-    .speaker-toggle-wrap {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .speaker-toggle-wrap.show { display: flex; }
-
-    .speaker-label-text {
-      font-size: 12px;
-      color: var(--text-sub);
-      font-weight: 500;
-      white-space: nowrap;
-    }
-
-    .btn-speaker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 22px;
-      border-radius: 8px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 700;
-      transition: all .15s;
-      min-width: 140px;
-      justify-content: center;
-    }
-
-    .btn-speaker.speaker-a {
-      background: var(--speaker-a-light);
-      border-color: var(--speaker-a);
-      color: var(--speaker-a);
-    }
-
-    .btn-speaker.speaker-b {
-      background: var(--speaker-b-light);
-      border-color: var(--speaker-b);
-      color: var(--speaker-b);
-    }
-
-    .speaker-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .speaker-dot.a { background: var(--speaker-a); }
-    .speaker-dot.b { background: var(--speaker-b); }
-
-    /* ── 録音インジケーター ── */
     .rec-status { display: none; align-items: center; gap: 10px; }
     .rec-status.show { display: flex; }
 
@@ -266,21 +172,11 @@
       animation: blink 1s infinite;
     }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.2; }
-    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-    .rec-time {
-      font-size: 22px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.05em;
-    }
-
+    .rec-time { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
     .rec-label { font-size: 12px; color: var(--text-sub); }
 
-    /* ── 処理中バッジ ── */
     .processing-badge {
       display: none;
       align-items: center;
@@ -314,10 +210,8 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── チャンク情報 ── */
     .chunk-info { font-size: 11px; color: var(--text-sub); margin-top: 8px; }
 
-    /* ── ボタン ── */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -331,10 +225,6 @@
       transition: all .15s;
     }
 
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
-
     .btn-ghost { background: var(--white); color: var(--text); border: 1px solid var(--border); }
     .btn-ghost:hover { background: var(--bg); }
     .btn-ghost:disabled { opacity: .5; cursor: not-allowed; }
@@ -347,31 +237,11 @@
     .btn-purple:hover { background: #6d28d9; }
     .btn-purple:disabled { background: #c4b5fd; cursor: not-allowed; }
 
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      margin-top: 16px;
-    }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 16px; }
 
-    /* ── 設定 ── */
-    .setting-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
+    .setting-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
-    .setting-row:last-child { margin-bottom: 0; }
-
-    .setting-row label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-sub);
-      white-space: nowrap;
-    }
+    .setting-row label { font-size: 12px; font-weight: 600; color: var(--text-sub); white-space: nowrap; }
 
     .setting-row select {
       padding: 5px 10px;
@@ -383,23 +253,6 @@
 
     .setting-row select:focus { outline: none; border-color: var(--primary); }
 
-    .setting-row input[type="text"] {
-      padding: 5px 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 12px;
-      width: 120px;
-    }
-
-    .setting-row input[type="text"]:focus { outline: none; border-color: var(--primary); }
-
-    .speaker-name-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* ── 文字起こし結果 ── */
     .transcript-box {
       min-height: 280px;
       max-height: 520px;
@@ -412,87 +265,27 @@
       line-height: 1.85;
     }
 
-    .transcript-empty {
-      color: var(--text-sub);
-      font-size: 13px;
-      text-align: center;
-      padding: 60px 0;
-    }
+    .transcript-empty { color: var(--text-sub); font-size: 13px; text-align: center; padding: 60px 0; }
 
     .chunk-block {
-      border-left: 3px solid var(--speaker-a);
+      border-left: 3px solid var(--primary);
       padding: 8px 12px;
       margin-bottom: 12px;
       background: var(--white);
       border-radius: 0 6px 6px 0;
-      position: relative;
-    }
-
-    .chunk-block.speaker-b {
-      border-left-color: var(--speaker-b);
-      background: #fffdf5;
     }
 
     .chunk-block:last-child { margin-bottom: 0; }
 
-    .chunk-time {
-      font-size: 10px;
-      color: var(--text-sub);
-      margin-bottom: 4px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .speaker-badge {
-      font-size: 10px;
-      font-weight: 700;
-      padding: 1px 7px;
-      border-radius: 10px;
-    }
-
-    .speaker-badge.a {
-      background: var(--speaker-a-light);
-      color: var(--speaker-a);
-    }
-
-    .speaker-badge.b {
-      background: var(--speaker-b-light);
-      color: var(--speaker-b);
-    }
+    .chunk-time { font-size: 10px; color: var(--text-sub); margin-bottom: 4px; font-weight: 500; }
 
     .chunk-text { font-size: 14px; line-height: 1.85; }
 
-    /* 話者切替ボタン（チャンク上） */
-    .btn-switch-speaker {
-      position: absolute;
-      top: 6px;
-      right: 8px;
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--white);
-      color: var(--text-sub);
-      cursor: pointer;
-      transition: all .15s;
-    }
-
-    .btn-switch-speaker:hover { background: var(--bg); color: var(--text); }
-
-    /* ── 統計 ── */
-    .stats-row {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
+    .stats-row { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; }
 
     .stat-item { font-size: 12px; color: var(--text-sub); }
     .stat-item span { font-weight: 600; color: var(--text); }
 
-    /* ── 警告バナー ── */
     .warn-banner {
       background: var(--warn-bg);
       border: 1px solid var(--warn-border);
@@ -504,7 +297,6 @@
       line-height: 1.6;
     }
 
-    /* ── エラー ── */
     .error-msg {
       display: none;
       background: var(--error-light);
@@ -518,7 +310,6 @@
 
     .error-msg.show { display: block; }
 
-    /* ── 分析タブ：テキスト入力 ── */
     .analysis-textarea {
       width: 100%;
       min-height: 180px;
@@ -534,67 +325,10 @@
 
     .analysis-textarea:focus { outline: none; border-color: var(--primary); }
 
-    /* ── 分析フィルター ── */
-    .analysis-filter {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-      padding: 10px 14px;
-      background: var(--bg);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-
-    .analysis-filter label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-sub);
-      white-space: nowrap;
-    }
-
-    .filter-btn {
-      padding: 4px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: var(--white);
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .15s;
-      color: var(--text-sub);
-    }
-
-    .filter-btn.active-a {
-      background: var(--speaker-a-light);
-      border-color: var(--speaker-a);
-      color: var(--speaker-a);
-    }
-
-    .filter-btn.active-b {
-      background: var(--speaker-b-light);
-      border-color: var(--speaker-b);
-      color: var(--speaker-b);
-    }
-
-    .filter-btn.active-all {
-      background: #f3f4f6;
-      border-color: #6b7280;
-      color: #374151;
-    }
-
-    /* ── 分析結果 ── */
-    .analysis-result {
-      display: none;
-    }
-
+    .analysis-result { display: none; }
     .analysis-result.show { display: block; }
 
-    .analysis-section {
-      margin-bottom: 20px;
-    }
-
+    .analysis-section { margin-bottom: 20px; }
     .analysis-section:last-child { margin-bottom: 0; }
 
     .analysis-section-title {
@@ -608,62 +342,18 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .analysis-section-body {
-      font-size: 14px;
-      line-height: 1.9;
-      color: var(--text);
-    }
+    .analysis-section-body { font-size: 14px; line-height: 1.9; color: var(--text); }
 
-    .tag {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 500;
-      margin: 2px 3px;
-    }
-
+    .tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; margin: 2px 3px; }
     .tag-red { background: #fee2e2; color: #991b1b; }
     .tag-blue { background: var(--primary-light); color: var(--primary); }
-    .tag-green { background: var(--success-light); color: #15803d; }
     .tag-purple { background: var(--purple-light); color: var(--purple); }
-    .tag-yellow { background: #fef9c3; color: #78350f; }
 
-    .score-bar-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 6px 0;
-    }
-
-    .score-label {
-      font-size: 13px;
-      width: 160px;
-      flex-shrink: 0;
-    }
-
-    .score-track {
-      flex: 1;
-      height: 8px;
-      background: var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .score-fill {
-      height: 100%;
-      background: var(--purple);
-      border-radius: 4px;
-      transition: width .6s ease;
-    }
-
-    .score-num {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--purple);
-      width: 32px;
-      text-align: right;
-    }
+    .score-bar-wrap { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+    .score-label { font-size: 13px; width: 160px; flex-shrink: 0; }
+    .score-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .score-fill { height: 100%; background: var(--purple); border-radius: 4px; transition: width .6s ease; }
+    .score-num { font-size: 12px; font-weight: 700; color: var(--purple); width: 32px; text-align: right; }
 
     .approach-block {
       background: var(--purple-light);
@@ -675,143 +365,72 @@
 
     .approach-block p { font-size: 14px; line-height: 1.9; }
 
-    /* ── 分析中ローダー ── */
-    .analysis-loading {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      padding: 20px 0;
-      color: var(--purple);
-      font-size: 13px;
-      font-weight: 500;
-    }
-
+    .analysis-loading { display: none; align-items: center; gap: 10px; padding: 20px 0; color: var(--purple); font-size: 13px; font-weight: 500; }
     .analysis-loading.show { display: flex; }
 
     /* ── 更新履歴 ── */
-    .changelog-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    .changelog-table th {
-      background: var(--bg);
-      padding: 10px 14px;
-      text-align: left;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-sub);
-      border-bottom: 2px solid var(--border);
-    }
-
-    .changelog-table td {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-      line-height: 1.7;
-    }
-
+    .changelog-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .changelog-table th { background: var(--bg); padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-sub); border-bottom: 2px solid var(--border); }
+    .changelog-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.7; }
     .changelog-table tr:last-child td { border-bottom: none; }
-
     .changelog-table tr:hover td { background: var(--bg); }
-
-    .ver-tag {
-      display: inline-block;
-      padding: 2px 9px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
+    .ver-tag { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
     .ver-tag.latest { background: #dcfce7; color: #15803d; }
     .ver-tag.old { background: #f3f4f6; color: var(--text-sub); }
-
     .change-list { margin: 0; padding-left: 18px; }
     .change-list li { margin-bottom: 3px; }
 
-    /* ════════════════════════════════
-       スマホ対応（640px以下）
-    ════════════════════════════════ */
     @media (max-width: 640px) {
       .header { padding: 12px 16px; gap: 10px; }
       .header-title h1 { font-size: 14px; }
       .header-title p { display: none; }
-
       .api-bar { padding: 10px 16px; }
       .api-bar input { width: 100%; }
-
       .tab-nav { padding: 0 8px; }
       .tab-nav-btn { flex: 1; justify-content: center; padding: 12px 8px; font-size: 13px; }
-
       .container { padding: 16px 12px; }
-
       .card { padding: 16px; }
-
       .btn-record { width: 100%; justify-content: center; padding: 16px; font-size: 16px; }
       .rec-control { flex-direction: column; align-items: flex-start; gap: 12px; }
-
       .rec-time { font-size: 28px; }
-
       .setting-row { flex-direction: column; align-items: flex-start; gap: 8px; }
       .setting-row select { width: 100%; font-size: 14px; padding: 8px 10px; }
-      .setting-row input[type="text"] { width: 100%; font-size: 14px; padding: 8px 10px; }
-      .setting-row label { margin-left: 0 !important; }
-
       .btn-row { flex-direction: column; }
       .btn-row .btn { width: 100%; justify-content: center; padding: 12px; font-size: 14px; }
-
       .transcript-box { min-height: 200px; max-height: 360px; }
-
       .score-label { width: 120px; font-size: 12px; }
-
       .analysis-textarea { min-height: 140px; font-size: 14px; }
-
       .tag { font-size: 11px; }
-
-      .btn-speaker { width: 100%; }
-      .speaker-toggle-wrap { width: 100%; }
     }
   </style>
 </head>
 <body>
 
-<!-- ヘッダー -->
 <div class="header">
   <div class="header-icon">🎙️</div>
   <div class="header-title">
     <h1>リアルタイム文字起こし＆分析</h1>
     <p>録音・即時テキスト変換・uniLinks向け会話分析 | uniLinks CDO</p>
   </div>
-  <span class="version-badge">v1.2.0</span>
+  <span class="version-badge">v1.3.0</span>
 </div>
 
-<!-- APIキーバー -->
 <div class="api-bar">
   <label>OpenAI APIキー</label>
   <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
   <span class="key-badge ng" id="keyBadge">未入力</span>
 </div>
 
-<!-- タブナビゲーション -->
 <div class="tab-nav">
-  <button class="tab-nav-btn active" onclick="switchTab('record')" id="tabBtnRecord">
-    🎙️ 録音・文字起こし
-  </button>
-  <button class="tab-nav-btn" onclick="switchTab('analysis')" id="tabBtnAnalysis">
-    🔍 会話分析
-  </button>
-  <button class="tab-nav-btn" onclick="switchTab('changelog')" id="tabBtnChangelog">
-    📋 更新履歴
-  </button>
+  <button class="tab-nav-btn active" onclick="switchTab('record')" id="tabBtnRecord">🎙️ 録音・文字起こし</button>
+  <button class="tab-nav-btn" onclick="switchTab('analysis')" id="tabBtnAnalysis">🔍 会話分析</button>
+  <button class="tab-nav-btn" onclick="switchTab('changelog')" id="tabBtnChangelog">📋 更新履歴</button>
 </div>
 
-<!-- ═══════ 録音タブ ═══════ -->
+<!-- 録音タブ -->
 <div class="tab-panel active" id="panelRecord">
   <div class="container">
 
-    <!-- 設定カード -->
     <div class="card">
       <div class="card-title">⚙️ 設定</div>
       <div class="setting-row">
@@ -828,21 +447,8 @@
           <option value="">自動検出</option>
         </select>
       </div>
-      <div class="setting-row">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div class="speaker-name-dot" style="background:var(--speaker-a);"></div>
-          <label>話者A（自分側）</label>
-        </div>
-        <input type="text" id="speakerNameA" value="自分" maxlength="10" placeholder="例：自分">
-        <div style="display:flex;align-items:center;gap:6px;margin-left:12px;">
-          <div class="speaker-name-dot" style="background:var(--speaker-b);"></div>
-          <label>話者B（相手側）</label>
-        </div>
-        <input type="text" id="speakerNameB" value="相手" maxlength="10" placeholder="例：相手">
-      </div>
     </div>
 
-    <!-- 録音コントロールカード -->
     <div class="card">
       <div class="card-title">🎙️ 録音コントロール</div>
 
@@ -851,12 +457,8 @@
       </div>
 
       <div class="rec-control">
-        <button class="btn-record start" id="btnStart" onclick="startRecording()">
-          ● 録音開始
-        </button>
-        <button class="btn-record stop" id="btnStop" onclick="stopRecording()" style="display:none;">
-          ■ 録音停止
-        </button>
+        <button class="btn-record start" id="btnStart" onclick="startRecording()">● 録音開始</button>
+        <button class="btn-record stop" id="btnStop" onclick="stopRecording()" style="display:none;">■ 録音停止</button>
 
         <div class="rec-status" id="recStatus">
           <div class="rec-dot"></div>
@@ -870,89 +472,45 @@
         </div>
       </div>
 
-      <!-- 話者切替エリア（録音中のみ表示） -->
-      <div class="speaker-toggle-wrap" id="speakerToggleWrap" style="margin-top:16px;">
-        <div class="speaker-label-text">現在の話者：</div>
-        <button class="btn-speaker speaker-a" id="btnSpeakerToggle" onclick="toggleSpeaker()">
-          <div class="speaker-dot a" id="speakerDot"></div>
-          <span id="speakerToggleLabel">自分</span>
-          <span style="font-size:11px;opacity:.7;">（タップで切替）</span>
-        </button>
-      </div>
-
       <div class="chunk-info" id="chunkInfo"></div>
       <div class="error-msg" id="errorMsg"></div>
     </div>
 
-    <!-- 文字起こし結果カード -->
     <div class="card">
       <div class="card-title">📝 文字起こし結果</div>
 
       <div class="transcript-box" id="transcriptBox">
-        <div class="transcript-empty" id="transcriptEmpty">
-          録音を開始すると、ここにテキストが表示されます
-        </div>
+        <div class="transcript-empty">録音を開始すると、ここにテキストが表示されます</div>
       </div>
 
       <div class="stats-row" id="statsRow" style="display:none;">
         <div class="stat-item">チャンク数：<span id="statChunks">0</span></div>
         <div class="stat-item">文字数：<span id="statChars">0</span></div>
         <div class="stat-item">録音時間：<span id="statDuration">--</span></div>
-        <div class="stat-item" id="statSpeakerA" style="display:none;"></div>
-        <div class="stat-item" id="statSpeakerB" style="display:none;"></div>
       </div>
 
       <div class="btn-row">
-        <button class="btn btn-purple" id="btnSendAnalysis" onclick="sendToAnalysis()" disabled>
-          🔍 分析タブへ送る
-        </button>
-        <button class="btn btn-green" id="btnDownload" onclick="downloadMd()" disabled>
-          📥 ダウンロード (.md)
-        </button>
-        <button class="btn btn-ghost" id="btnCopy" onclick="copyText()" disabled>
-          📋 テキストをコピー
-        </button>
-        <button class="btn btn-ghost" id="btnClear" onclick="clearTranscript()" disabled>
-          🗑️ クリア
-        </button>
+        <button class="btn btn-purple" id="btnSendAnalysis" onclick="sendToAnalysis()" disabled>🔍 分析タブへ送る</button>
+        <button class="btn btn-green" id="btnDownload" onclick="downloadMd()" disabled>📥 ダウンロード (.md)</button>
+        <button class="btn btn-ghost" id="btnCopy" onclick="copyText()" disabled>📋 テキストをコピー</button>
+        <button class="btn btn-ghost" id="btnClear" onclick="clearTranscript()" disabled>🗑️ クリア</button>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- ═══════ 分析タブ ═══════ -->
+<!-- 分析タブ -->
 <div class="tab-panel" id="panelAnalysis">
   <div class="container">
 
-    <!-- テキスト入力カード -->
     <div class="card">
       <div class="card-title">📋 会話テキスト</div>
       <textarea class="analysis-textarea" id="analysisInput"
-        placeholder="文字起こしした会話テキストをここに貼り付けてください。&#10;録音タブの「分析タブへ送る」ボタンでも自動入力できます。&#10;&#10;話者を区別する場合は【自分】【相手】のような形式で記述してください。"></textarea>
-
-      <!-- 話者フィルター -->
-      <div class="analysis-filter" id="analysisFilter" style="display:none;">
-        <label>分析対象：</label>
-        <button class="filter-btn active-all" id="filterAll" onclick="setFilter('all')">全発言</button>
-        <button class="filter-btn" id="filterA" onclick="setFilter('a')">
-          <span id="filterLabelA">自分</span>のみ
-        </button>
-        <button class="filter-btn" id="filterB" onclick="setFilter('b')">
-          <span id="filterLabelB">相手</span>のみ
-        </button>
-        <span style="font-size:11px;color:var(--text-sub);margin-left:4px;">
-          ※ 「相手のみ」で分析すると顧客の本音を精度よく抽出できます
-        </span>
-      </div>
-
+        placeholder="文字起こしした会話テキストをここに貼り付けてください。&#10;録音タブの「分析タブへ送る」ボタンでも自動入力できます。"></textarea>
       <div class="btn-row">
-        <button class="btn btn-purple" onclick="runAnalysis()" id="btnAnalyze">
-          🔍 分析開始
-        </button>
-        <button class="btn btn-ghost" onclick="clearAnalysis()">
-          🗑️ クリア
-        </button>
+        <button class="btn btn-purple" onclick="runAnalysis()" id="btnAnalyze">🔍 分析開始</button>
+        <button class="btn btn-ghost" onclick="clearAnalysis()">🗑️ クリア</button>
       </div>
 
       <div class="analysis-loading" id="analysisLoading">
@@ -963,51 +521,43 @@
       <div class="error-msg" id="analysisError"></div>
     </div>
 
-    <!-- 分析結果カード -->
     <div class="card analysis-result" id="analysisResult">
       <div class="card-title">📊 分析結果</div>
 
-      <!-- 悩み・課題 -->
       <div class="analysis-section">
         <div class="analysis-section-title">😟 相手の悩み・課題</div>
         <div class="analysis-section-body" id="resultPains"></div>
       </div>
 
-      <!-- 理想・欲求 -->
       <div class="analysis-section">
         <div class="analysis-section-title">✨ 理想・欲求</div>
         <div class="analysis-section-body" id="resultDesires"></div>
       </div>
 
-      <!-- サービス興味スコア -->
       <div class="analysis-section">
         <div class="analysis-section-title">📈 uniLinksサービスへの興味度</div>
         <div class="analysis-section-body" id="resultScores"></div>
       </div>
 
-      <!-- タイプ判定 -->
       <div class="analysis-section">
         <div class="analysis-section-title">🏷️ 顧客タイプ判定</div>
         <div class="analysis-section-body" id="resultType"></div>
       </div>
 
-      <!-- 次のアプローチ -->
       <div class="analysis-section">
         <div class="analysis-section-title">🎯 次のアプローチ提案</div>
         <div class="analysis-section-body" id="resultApproach"></div>
       </div>
 
       <div class="btn-row">
-        <button class="btn btn-green" onclick="downloadAnalysis()">
-          📥 分析結果をダウンロード (.md)
-        </button>
+        <button class="btn btn-green" onclick="downloadAnalysis()">📥 分析結果をダウンロード (.md)</button>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- ═══════ 更新履歴タブ ═══════ -->
+<!-- 更新履歴タブ -->
 <div class="tab-panel" id="panelChangelog">
   <div class="container">
     <div class="card">
@@ -1022,17 +572,23 @@
         </thead>
         <tbody>
           <tr>
-            <td><span class="ver-tag latest">v1.2.0 最新</span></td>
+            <td><span class="ver-tag latest">v1.3.0 最新</span></td>
+            <td>2026-04-17</td>
+            <td>
+              <ul class="change-list">
+                <li>話者選択機能を削除（シンプルなテキスト出力に変更）</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="ver-tag old">v1.2.0</span></td>
             <td>2026-04-17</td>
             <td>
               <ul class="change-list">
                 <li>話者区別機能を追加（話者A / 話者B の名前設定）</li>
                 <li>録音中に話者切替ボタンを表示、チャンクごとに話者を記録</li>
-                <li>文字起こし結果を話者ごとに色分け表示（青 / オレンジ）</li>
-                <li>チャンク単位で話者を後から修正できるボタンを追加</li>
-                <li>分析タブへ送る際に【自分】【相手】形式で自動整形</li>
                 <li>分析対象フィルター（全発言 / 自分のみ / 相手のみ）を追加</li>
-                <li>更新履歴タブを追加（本機能）</li>
+                <li>更新履歴タブを追加</li>
               </ul>
             </td>
           </tr>
@@ -1045,7 +601,6 @@
                 <li>Whisper APIによるリアルタイム文字起こし</li>
                 <li>GPT-4oによる会話分析（顧客タイプ・悩み・アプローチ提案）</li>
                 <li>Markdown形式でのダウンロード</li>
-                <li>チャンク間隔・言語の設定</li>
               </ul>
             </td>
           </tr>
@@ -1056,9 +611,7 @@
 </div>
 
 <script>
-  // ════════════════════════════════
-  //  APIキー管理
-  // ════════════════════════════════
+  // APIキー管理
   const apiKeyInput = document.getElementById('apiKey');
   const keyBadge = document.getElementById('keyBadge');
 
@@ -1073,54 +626,15 @@
 
   function updateKeyBadge(val) {
     if (val.startsWith('sk-') && val.length > 20) {
-      keyBadge.textContent = '設定済み';
-      keyBadge.className = 'key-badge ok';
+      keyBadge.textContent = '設定済み'; keyBadge.className = 'key-badge ok';
     } else if (val) {
-      keyBadge.textContent = '形式が違います';
-      keyBadge.className = 'key-badge ng';
+      keyBadge.textContent = '形式が違います'; keyBadge.className = 'key-badge ng';
     } else {
-      keyBadge.textContent = '未入力';
-      keyBadge.className = 'key-badge ng';
+      keyBadge.textContent = '未入力'; keyBadge.className = 'key-badge ng';
     }
   }
 
-  // ════════════════════════════════
-  //  話者管理
-  // ════════════════════════════════
-  let currentSpeaker = 'A'; // 'A' or 'B'
-
-  function getSpeakerName(key) {
-    if (key === 'A') return document.getElementById('speakerNameA').value.trim() || '自分';
-    return document.getElementById('speakerNameB').value.trim() || '相手';
-  }
-
-  function toggleSpeaker() {
-    currentSpeaker = currentSpeaker === 'A' ? 'B' : 'A';
-    updateSpeakerToggleUI();
-  }
-
-  function updateSpeakerToggleUI() {
-    const btn = document.getElementById('btnSpeakerToggle');
-    const dot = document.getElementById('speakerDot');
-    const label = document.getElementById('speakerToggleLabel');
-    const name = getSpeakerName(currentSpeaker);
-    label.textContent = name;
-    if (currentSpeaker === 'A') {
-      btn.className = 'btn-speaker speaker-a';
-      dot.className = 'speaker-dot a';
-    } else {
-      btn.className = 'btn-speaker speaker-b';
-      dot.className = 'speaker-dot b';
-    }
-  }
-
-  // 話者名変更時にトグルUIも更新
-  document.getElementById('speakerNameA').addEventListener('input', updateSpeakerToggleUI);
-  document.getElementById('speakerNameB').addEventListener('input', updateSpeakerToggleUI);
-
-  // ════════════════════════════════
-  //  タブ切り替え
-  // ════════════════════════════════
+  // タブ切り替え
   function switchTab(tab) {
     ['record', 'analysis', 'changelog'].forEach(t => {
       document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1))
@@ -1130,9 +644,7 @@
     });
   }
 
-  // ════════════════════════════════
-  //  録音タブ
-  // ════════════════════════════════
+  // 録音
   let micStream = null;
   let mediaRecorder = null;
   let currentChunkData = [];
@@ -1159,41 +671,26 @@
 
   function startChunk() {
     if (!micStream || !isRecording) return;
-
     currentChunkData = [];
     const recStartSec = elapsedSeconds;
-    const speakerAtStart = currentSpeaker; // チャンク開始時点の話者を記録
 
     mediaRecorder = new MediaRecorder(micStream, mimeType ? { mimeType } : {});
-
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) currentChunkData.push(e.data);
-    };
-
+    mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) currentChunkData.push(e.data); };
     mediaRecorder.onstop = () => {
-      if (currentChunkData.length > 0) {
-        const endSec = elapsedSeconds;
-        sendChunk([...currentChunkData], mediaRecorder.mimeType, recStartSec, endSec, speakerAtStart);
-      }
+      if (currentChunkData.length > 0) sendChunk([...currentChunkData], mediaRecorder.mimeType, recStartSec, elapsedSeconds);
       if (isRecording) startChunk();
     };
 
-    const intervalSec = parseInt(document.getElementById('chunkInterval').value);
     mediaRecorder.start();
-
+    const intervalSec = parseInt(document.getElementById('chunkInterval').value);
     setTimeout(() => {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-      }
+      if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
     }, intervalSec * 1000);
   }
 
   async function startRecording() {
     const apiKey = apiKeyInput.value.trim();
-    if (!apiKey.startsWith('sk-')) {
-      showError('OpenAI APIキーを入力してください（sk-... の形式）');
-      return;
-    }
+    if (!apiKey.startsWith('sk-')) { showError('OpenAI APIキーを入力してください（sk-... の形式）'); return; }
     hideError();
 
     try {
@@ -1204,15 +701,9 @@
     }
 
     mimeType = selectMimeType();
-    chunkCount = 0;
-    elapsedSeconds = 0;
-    lastChunkText = '';
-    currentSpeaker = 'A';
+    chunkCount = 0; elapsedSeconds = 0; lastChunkText = '';
     isRecording = true;
-
     updateRecUI(true);
-    updateSpeakerToggleUI();
-    document.getElementById('speakerToggleWrap').classList.add('show');
     startTimer();
     startChunk();
   }
@@ -1221,21 +712,12 @@
     isRecording = false;
     stopTimer();
     updateRecUI(false);
-    document.getElementById('speakerToggleWrap').classList.remove('show');
-
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-    }
-
-    if (micStream) {
-      micStream.getTracks().forEach(t => t.stop());
-      micStream = null;
-    }
-
+    if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+    if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
     updateStats();
   }
 
-  async function sendChunk(chunks, recMimeType, startSec, endSec, speaker) {
+  async function sendChunk(chunks, recMimeType, startSec, endSec) {
     const apiKey = apiKeyInput.value.trim();
     const language = document.getElementById('language').value;
     showProcessing(true);
@@ -1266,7 +748,7 @@
       if (text) {
         chunkCount++;
         lastChunkText = text;
-        transcriptBlocks.push({ startSec, endSec, text, speaker });
+        transcriptBlocks.push({ startSec, endSec, text });
         renderTranscript();
         updateStats();
       }
@@ -1274,100 +756,39 @@
       showError(`文字起こしエラー：${e.message}`);
     } finally {
       showProcessing(false);
-      updateChunkInfo();
+      if (chunkCount > 0) document.getElementById('chunkInfo').textContent = `処理済みチャンク：${chunkCount}個`;
     }
   }
 
   function renderTranscript() {
     const box = document.getElementById('transcriptBox');
     if (transcriptBlocks.length === 0) {
-      box.innerHTML = '<div class="transcript-empty" id="transcriptEmpty">録音を開始すると、ここにテキストが表示されます</div>';
+      box.innerHTML = '<div class="transcript-empty">録音を開始すると、ここにテキストが表示されます</div>';
       return;
     }
-    box.innerHTML = transcriptBlocks.map((b, idx) => {
-      const start = formatTime(b.startSec);
-      const end = formatTime(b.endSec);
-      const spKey = b.speaker || 'A';
-      const spName = getSpeakerName(spKey);
-      const badgeClass = spKey === 'A' ? 'a' : 'b';
-      const blockClass = spKey === 'B' ? 'chunk-block speaker-b' : 'chunk-block';
-      return `<div class="${blockClass}" id="block-${idx}">
-        <div class="chunk-time">
-          <span class="speaker-badge ${badgeClass}">${escapeHtml(spName)}</span>
-          ${start} ～ ${end}
-        </div>
+    box.innerHTML = transcriptBlocks.map(b => `
+      <div class="chunk-block">
+        <div class="chunk-time">${formatTime(b.startSec)} ～ ${formatTime(b.endSec)}</div>
         <div class="chunk-text">${escapeHtml(b.text)}</div>
-        <button class="btn-switch-speaker" onclick="switchBlockSpeaker(${idx})">話者を切替</button>
-      </div>`;
-    }).join('');
+      </div>`).join('');
     box.scrollTop = box.scrollHeight;
-
-    document.getElementById('btnDownload').disabled = false;
-    document.getElementById('btnCopy').disabled = false;
-    document.getElementById('btnClear').disabled = false;
-    document.getElementById('btnSendAnalysis').disabled = false;
-  }
-
-  // 後から個別チャンクの話者を修正する
-  function switchBlockSpeaker(idx) {
-    transcriptBlocks[idx].speaker = transcriptBlocks[idx].speaker === 'A' ? 'B' : 'A';
-    renderTranscript();
-    updateStats();
+    ['btnDownload','btnCopy','btnClear','btnSendAnalysis'].forEach(id => {
+      document.getElementById(id).disabled = false;
+    });
   }
 
   function updateStats() {
     document.getElementById('statsRow').style.display = 'flex';
     document.getElementById('statChunks').textContent = chunkCount;
-    const allText = transcriptBlocks.map(b => b.text).join('');
-    document.getElementById('statChars').textContent = allText.length.toLocaleString();
+    document.getElementById('statChars').textContent = transcriptBlocks.map(b => b.text).join('').length.toLocaleString();
     document.getElementById('statDuration').textContent = elapsedSeconds > 0 ? formatTime(elapsedSeconds) : '--';
-
-    // 話者別チャンク数
-    const countA = transcriptBlocks.filter(b => (b.speaker || 'A') === 'A').length;
-    const countB = transcriptBlocks.filter(b => b.speaker === 'B').length;
-    const nameA = getSpeakerName('A');
-    const nameB = getSpeakerName('B');
-    const elA = document.getElementById('statSpeakerA');
-    const elB = document.getElementById('statSpeakerB');
-    if (countA > 0) {
-      elA.style.display = '';
-      elA.innerHTML = `${escapeHtml(nameA)}：<span>${countA}チャンク</span>`;
-    }
-    if (countB > 0) {
-      elB.style.display = '';
-      elB.innerHTML = `${escapeHtml(nameB)}：<span>${countB}チャンク</span>`;
-    }
-  }
-
-  function updateChunkInfo() {
-    if (chunkCount > 0) document.getElementById('chunkInfo').textContent = `処理済みチャンク：${chunkCount}個`;
-  }
-
-  function getFormattedTranscript() {
-    return transcriptBlocks.map(b => {
-      const spKey = b.speaker || 'A';
-      const spName = getSpeakerName(spKey);
-      return `【${spName}】${b.text}`;
-    }).join('\n\n');
   }
 
   function sendToAnalysis() {
-    const text = getFormattedTranscript();
-    document.getElementById('analysisInput').value = text;
-
-    // 話者フィルターを表示・更新
-    const nameA = getSpeakerName('A');
-    const nameB = getSpeakerName('B');
-    document.getElementById('filterLabelA').textContent = nameA;
-    document.getElementById('filterLabelB').textContent = nameB;
-    document.getElementById('analysisFilter').style.display = 'flex';
-
+    document.getElementById('analysisInput').value = transcriptBlocks.map(b => b.text).join('\n\n');
     switchTab('analysis');
   }
 
-  // ════════════════════════════════
-  //  タイマー
-  // ════════════════════════════════
   function startTimer() {
     timerInterval = setInterval(() => {
       elapsedSeconds++;
@@ -1389,16 +810,8 @@
     document.getElementById('recStatus').classList.toggle('show', recording);
   }
 
-  function showProcessing(show) {
-    document.getElementById('processingBadge').classList.toggle('show', show);
-  }
-
-  function showError(msg) {
-    const el = document.getElementById('errorMsg');
-    el.textContent = msg;
-    el.classList.add('show');
-  }
-
+  function showProcessing(show) { document.getElementById('processingBadge').classList.toggle('show', show); }
+  function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.classList.add('show'); }
   function hideError() { document.getElementById('errorMsg').classList.remove('show'); }
 
   function downloadMd() {
@@ -1406,22 +819,10 @@
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
     const timeStr = now.toTimeString().slice(0, 5).replace(':', '');
-    const nameA = getSpeakerName('A');
-    const nameB = getSpeakerName('B');
-    const lines = [
-      '# 文字起こし結果',
-      '',
-      `日時：${now.toLocaleString('ja-JP')}`,
-      `話者A：${nameA}　話者B：${nameB}`,
-      ''
-    ];
+    const lines = ['# 文字起こし結果', '', `日時：${now.toLocaleString('ja-JP')}`, ''];
     transcriptBlocks.forEach((b, i) => {
-      const spKey = b.speaker || 'A';
-      const spName = getSpeakerName(spKey);
       lines.push(`## チャンク ${i + 1}（${formatTime(b.startSec)} ～ ${formatTime(b.endSec)}）`);
-      lines.push('');
-      lines.push(`**【${spName}】** ${b.text}`);
-      lines.push('');
+      lines.push(''); lines.push(b.text); lines.push('');
     });
     lines.push('---');
     lines.push(`総チャンク数：${chunkCount}  文字数：${transcriptBlocks.map(b => b.text).join('').length}`);
@@ -1430,8 +831,7 @@
 
   function copyText() {
     if (transcriptBlocks.length === 0) return;
-    const text = getFormattedTranscript();
-    navigator.clipboard.writeText(text).then(() => {
+    navigator.clipboard.writeText(transcriptBlocks.map(b => b.text).join('\n\n')).then(() => {
       const btn = document.getElementById('btnCopy');
       btn.textContent = '✅ コピーしました';
       setTimeout(() => { btn.innerHTML = '📋 テキストをコピー'; }, 1500);
@@ -1440,11 +840,8 @@
 
   function clearTranscript() {
     if (!confirm('文字起こし結果をすべて削除しますか？')) return;
-    transcriptBlocks = [];
-    chunkCount = 0;
-    lastChunkText = '';
-    document.getElementById('transcriptBox').innerHTML =
-      '<div class="transcript-empty" id="transcriptEmpty">録音を開始すると、ここにテキストが表示されます</div>';
+    transcriptBlocks = []; chunkCount = 0; lastChunkText = '';
+    renderTranscript();
     document.getElementById('statsRow').style.display = 'none';
     document.getElementById('chunkInfo').textContent = '';
     ['btnDownload','btnCopy','btnClear','btnSendAnalysis'].forEach(id => {
@@ -1453,59 +850,20 @@
     hideError();
   }
 
-  // ════════════════════════════════
-  //  分析タブ
-  // ════════════════════════════════
+  // 分析タブ
   let lastAnalysisResult = null;
-  let currentFilter = 'all'; // 'all' | 'a' | 'b'
-
-  function setFilter(filter) {
-    currentFilter = filter;
-    document.getElementById('filterAll').className = 'filter-btn' + (filter === 'all' ? ' active-all' : '');
-    document.getElementById('filterA').className = 'filter-btn' + (filter === 'a' ? ' active-a' : '');
-    document.getElementById('filterB').className = 'filter-btn' + (filter === 'b' ? ' active-b' : '');
-  }
-
-  function getFilteredText() {
-    const rawText = document.getElementById('analysisInput').value.trim();
-    if (currentFilter === 'all' || transcriptBlocks.length === 0) return rawText;
-
-    // transcriptBlocksが存在する場合はフィルタリング
-    const targetSpeaker = currentFilter === 'a' ? 'A' : 'B';
-    const filtered = transcriptBlocks.filter(b => (b.speaker || 'A') === targetSpeaker);
-    if (filtered.length === 0) return rawText;
-
-    return filtered.map(b => {
-      const spName = getSpeakerName(b.speaker || 'A');
-      return `【${spName}】${b.text}`;
-    }).join('\n\n');
-  }
 
   async function runAnalysis() {
     const apiKey = apiKeyInput.value.trim();
-    if (!apiKey.startsWith('sk-')) {
-      showAnalysisError('OpenAI APIキーを入力してください（sk-... の形式）');
-      return;
-    }
+    if (!apiKey.startsWith('sk-')) { showAnalysisError('OpenAI APIキーを入力してください（sk-... の形式）'); return; }
 
-    const inputText = getFilteredText();
-    if (!inputText) {
-      showAnalysisError('会話テキストを入力してください。');
-      return;
-    }
+    const inputText = document.getElementById('analysisInput').value.trim();
+    if (!inputText) { showAnalysisError('会話テキストを入力してください。'); return; }
 
     hideAnalysisError();
     document.getElementById('analysisResult').classList.remove('show');
     document.getElementById('analysisLoading').classList.add('show');
     document.getElementById('btnAnalyze').disabled = true;
-
-    const nameA = getSpeakerName('A');
-    const nameB = getSpeakerName('B');
-    const filterNote = currentFilter === 'b'
-      ? `\n※ 今回の分析対象は「${nameB}」の発言のみです。`
-      : currentFilter === 'a'
-      ? `\n※ 今回の分析対象は「${nameA}」の発言のみです。`
-      : `\n※ 会話内の話者は「${nameA}」（セールス担当）と「${nameB}」（顧客候補）です。分析は主に「${nameB}」の発言を根拠にしてください。`;
 
     const systemPrompt = `あなたはuniLinksのセールス分析AIです。
 uniLinksについて：
@@ -1525,12 +883,9 @@ uniLinksについて：
 - 相手が自ら動く状態を作ることが目的
 - GAP（現状と理想のギャップ）+ PAIN（痛み）+ ACCOMPANIMENT（伴走）= 必然の成約
 - 決断の8割は提案前に完了している
-${filterNote}
 
 以下の会話テキストを分析し、必ずJSON形式で回答してください。
-テキストに【話者名】の形式でラベルがついている場合は、各発言者を区別して分析してください。
 
-JSONの構造：
 {
   "pains": ["悩み・課題を箇条書きで3〜5個"],
   "desires": ["理想・欲求を箇条書きで3〜5個"],
@@ -1550,10 +905,7 @@ JSONの構造：
     try {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'gpt-4o',
           messages: [
@@ -1571,8 +923,7 @@ JSONの構造：
       }
 
       const data = await res.json();
-      const raw = data.choices?.[0]?.message?.content;
-      const result = JSON.parse(raw);
+      const result = JSON.parse(data.choices?.[0]?.message?.content);
       lastAnalysisResult = result;
       renderAnalysis(result);
 
@@ -1587,32 +938,20 @@ JSONの構造：
   function renderAnalysis(r) {
     document.getElementById('resultPains').innerHTML =
       r.pains.map(p => `<span class="tag tag-red">😟 ${escapeHtml(p)}</span>`).join('');
-
     document.getElementById('resultDesires').innerHTML =
       r.desires.map(d => `<span class="tag tag-blue">✨ ${escapeHtml(d)}</span>`).join('');
-
     document.getElementById('resultScores').innerHTML =
       r.scores.map(s => `
         <div class="score-bar-wrap">
           <div class="score-label">${escapeHtml(s.label)}</div>
-          <div class="score-track">
-            <div class="score-fill" style="width:${s.score}%"></div>
-          </div>
+          <div class="score-track"><div class="score-fill" style="width:${s.score}%"></div></div>
           <div class="score-num">${s.score}</div>
-        </div>
-      `).join('');
-
+        </div>`).join('');
     document.getElementById('resultType').innerHTML = `
       <span class="tag tag-purple" style="font-size:13px; padding:5px 14px;">${escapeHtml(r.type.name)}</span>
-      <p style="margin-top:10px; font-size:14px; line-height:1.85; color:var(--text-sub);">${escapeHtml(r.type.reason)}</p>
-    `;
-
+      <p style="margin-top:10px; font-size:14px; line-height:1.85; color:var(--text-sub);">${escapeHtml(r.type.reason)}</p>`;
     document.getElementById('resultApproach').innerHTML = `
-      <div class="approach-block">
-        <p>${escapeHtml(r.approach).replace(/\n/g, '<br>')}</p>
-      </div>
-    `;
-
+      <div class="approach-block"><p>${escapeHtml(r.approach).replace(/\n/g, '<br>')}</p></div>`;
     document.getElementById('analysisResult').classList.add('show');
     document.getElementById('analysisResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1620,84 +959,40 @@ JSONの構造：
   function clearAnalysis() {
     document.getElementById('analysisInput').value = '';
     document.getElementById('analysisResult').classList.remove('show');
-    document.getElementById('analysisFilter').style.display = 'none';
     hideAnalysisError();
     lastAnalysisResult = null;
-    setFilter('all');
   }
 
-  function showAnalysisError(msg) {
-    const el = document.getElementById('analysisError');
-    el.textContent = msg;
-    el.classList.add('show');
-  }
-
-  function hideAnalysisError() {
-    document.getElementById('analysisError').classList.remove('show');
-  }
+  function showAnalysisError(msg) { const el = document.getElementById('analysisError'); el.textContent = msg; el.classList.add('show'); }
+  function hideAnalysisError() { document.getElementById('analysisError').classList.remove('show'); }
 
   function downloadAnalysis() {
     if (!lastAnalysisResult) return;
     const r = lastAnalysisResult;
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
-
-    const filterLabel = currentFilter === 'b' ? `（${getSpeakerName('B')}の発言のみ）`
-      : currentFilter === 'a' ? `（${getSpeakerName('A')}の発言のみ）` : '（全発言）';
-
     const lines = [
-      '# 会話分析レポート',
-      '',
-      `日時：${now.toLocaleString('ja-JP')}`,
-      `分析対象：${filterLabel}`,
-      '',
-      '---',
-      '',
-      '## 相手の悩み・課題',
-      '',
-      ...r.pains.map(p => `- ${p}`),
-      '',
-      '## 理想・欲求',
-      '',
-      ...r.desires.map(d => `- ${d}`),
-      '',
-      '## uniLinksサービスへの興味度',
-      '',
-      ...r.scores.map(s => `- ${s.label}：${s.score}/100`),
-      '',
-      '## 顧客タイプ判定',
-      '',
-      `**${r.type.name}**`,
-      '',
-      r.type.reason,
-      '',
-      '## 次のアプローチ提案',
-      '',
-      r.approach,
+      '# 会話分析レポート', '', `日時：${now.toLocaleString('ja-JP')}`, '', '---', '',
+      '## 相手の悩み・課題', '', ...r.pains.map(p => `- ${p}`), '',
+      '## 理想・欲求', '', ...r.desires.map(d => `- ${d}`), '',
+      '## uniLinksサービスへの興味度', '', ...r.scores.map(s => `- ${s.label}：${s.score}/100`), '',
+      '## 顧客タイプ判定', '', `**${r.type.name}**`, '', r.type.reason, '',
+      '## 次のアプローチ提案', '', r.approach,
     ];
-
     triggerDownload(lines.join('\n'), `${dateStr}_会話分析レポート.md`);
   }
 
-  // ════════════════════════════════
-  //  共通ユーティリティ
-  // ════════════════════════════════
   function triggerDownload(content, filename) {
     const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
+    a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
   }
 
   function escapeHtml(str) {
     return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 </script>
 
