@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>リアルタイム文字起こし＆分析 | uniLinks CDO</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --success: #16a34a;
+      --success-light: #f0fdf4;
+      --error: #dc2626;
+      --error-light: #fef2f2;
+      --warn-bg: #fffbeb;
+      --warn-border: #fbbf24;
+      --text: #111827;
+      --text-sub: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --white: #ffffff;
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --red: #dc2626;
+      --purple: #7c3aed;
+      --purple-light: #f5f3ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── ヘッダー ── */
+    .header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-icon { font-size: 22px; }
+
+    .header-title h1 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .header-title p {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 1px;
+    }
+
+    /* ── APIキーバー ── */
+    .api-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .api-bar label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+
+    .api-bar input {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      width: 340px;
+      max-width: 100%;
+    }
+
+    .api-bar input:focus { outline: none; border-color: var(--primary); }
+
+    .key-badge {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .key-badge.ok { background: #dcfce7; color: var(--success); }
+    .key-badge.ng { background: #fef9c3; color: #92400e; }
+
+    /* ── タブナビ ── */
+    .tab-nav {
+      background: var(--white);
+      border-bottom: 2px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .tab-nav-btn {
+      padding: 12px 20px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-sub);
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-nav-btn:hover { color: var(--primary); }
+    .tab-nav-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── コンテナ ── */
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 28px 20px;
+    }
+
+    /* ── カード ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── 録音コントロール ── */
+    .rec-control {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-record {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all .15s;
+    }
+
+    .btn-record.start { background: var(--red); color: white; }
+    .btn-record.start:hover { background: #b91c1c; }
+    .btn-record.start:disabled { background: #fca5a5; cursor: not-allowed; }
+    .btn-record.stop { background: #374151; color: white; }
+    .btn-record.stop:hover { background: #1f2937; }
+
+    /* ── 録音インジケーター ── */
+    .rec-status { display: none; align-items: center; gap: 10px; }
+    .rec-status.show { display: flex; }
+
+    .rec-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .rec-time {
+      font-size: 22px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.05em;
+    }
+
+    .rec-label { font-size: 12px; color: var(--text-sub); }
+
+    /* ── 処理中バッジ ── */
+    .processing-badge {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: var(--primary-light);
+      border: 1px solid #bfdbfe;
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    .processing-badge.show { display: flex; }
+
+    .spinner {
+      width: 12px; height: 12px;
+      border: 2px solid #bfdbfe;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    .spinner-purple {
+      width: 14px; height: 14px;
+      border: 2px solid #ddd6fe;
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── チャンク情報 ── */
+    .chunk-info { font-size: 11px; color: var(--text-sub); margin-top: 8px; }
+
+    /* ── ボタン ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all .15s;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+
+    .btn-ghost { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-ghost:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-green { background: #16a34a; color: white; }
+    .btn-green:hover { background: #15803d; }
+    .btn-green:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-purple { background: var(--purple); color: white; }
+    .btn-purple:hover { background: #6d28d9; }
+    .btn-purple:disabled { background: #c4b5fd; cursor: not-allowed; }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    /* ── 設定 ── */
+    .setting-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .setting-row label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+
+    .setting-row select {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      background: var(--white);
+    }
+
+    .setting-row select:focus { outline: none; border-color: var(--primary); }
+
+    /* ── 文字起こし結果 ── */
+    .transcript-box {
+      min-height: 280px;
+      max-height: 520px;
+      overflow-y: auto;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.85;
+    }
+
+    .transcript-empty {
+      color: var(--text-sub);
+      font-size: 13px;
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .chunk-block {
+      border-left: 3px solid var(--primary);
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      background: var(--white);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .chunk-block:last-child { margin-bottom: 0; }
+
+    .chunk-time {
+      font-size: 10px;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .chunk-text { font-size: 14px; line-height: 1.85; }
+
+    /* ── 統計 ── */
+    .stats-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .stat-item { font-size: 12px; color: var(--text-sub); }
+    .stat-item span { font-weight: 600; color: var(--text); }
+
+    /* ── 警告バナー ── */
+    .warn-banner {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #78350f;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    /* ── エラー ── */
+    .error-msg {
+      display: none;
+      background: var(--error-light);
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--error);
+      margin-top: 12px;
+    }
+
+    .error-msg.show { display: block; }
+
+    /* ── 分析タブ：テキスト入力 ── */
+    .analysis-textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.85;
+      font-family: inherit;
+      resize: vertical;
+      background: var(--bg);
+    }
+
+    .analysis-textarea:focus { outline: none; border-color: var(--primary); }
+
+    /* ── 分析結果 ── */
+    .analysis-result {
+      display: none;
+    }
+
+    .analysis-result.show { display: block; }
+
+    .analysis-section {
+      margin-bottom: 20px;
+    }
+
+    .analysis-section:last-child { margin-bottom: 0; }
+
+    .analysis-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .analysis-section-body {
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--text);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      margin: 2px 3px;
+    }
+
+    .tag-red { background: #fee2e2; color: #991b1b; }
+    .tag-blue { background: var(--primary-light); color: var(--primary); }
+    .tag-green { background: var(--success-light); color: #15803d; }
+    .tag-purple { background: var(--purple-light); color: var(--purple); }
+    .tag-yellow { background: #fef9c3; color: #78350f; }
+
+    .score-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+    }
+
+    .score-label {
+      font-size: 13px;
+      width: 160px;
+      flex-shrink: 0;
+    }
+
+    .score-track {
+      flex: 1;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      background: var(--purple);
+      border-radius: 4px;
+      transition: width .6s ease;
+    }
+
+    .score-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--purple);
+      width: 32px;
+      text-align: right;
+    }
+
+    .approach-block {
+      background: var(--purple-light);
+      border-left: 3px solid var(--purple);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin-top: 8px;
+    }
+
+    .approach-block p { font-size: 14px; line-height: 1.9; }
+
+    /* ── 分析中ローダー ── */
+    .analysis-loading {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 0;
+      color: var(--purple);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .analysis-loading.show { display: flex; }
+
+    /* ════════════════════════════════
+       スマホ対応（640px以下）
+    ════════════════════════════════ */
+    @media (max-width: 640px) {
+      /* ヘッダー */
+      .header { padding: 12px 16px; gap: 10px; }
+      .header-title h1 { font-size: 14px; }
+      .header-title p { display: none; } /* サブタイトル非表示 */
+
+      /* APIキーバー */
+      .api-bar { padding: 10px 16px; }
+      .api-bar input { width: 100%; }
+
+      /* タブ */
+      .tab-nav { padding: 0 8px; }
+      .tab-nav-btn { flex: 1; justify-content: center; padding: 12px 8px; font-size: 13px; }
+
+      /* コンテナ */
+      .container { padding: 16px 12px; }
+
+      /* カード */
+      .card { padding: 16px; }
+
+      /* 録音ボタン：全幅・大きめタッチ */
+      .btn-record { width: 100%; justify-content: center; padding: 16px; font-size: 16px; }
+      .rec-control { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+      /* 録音時間：大きく */
+      .rec-time { font-size: 28px; }
+
+      /* 設定行：縦並び */
+      .setting-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .setting-row select { width: 100%; font-size: 14px; padding: 8px 10px; }
+      .setting-row label { margin-left: 0 !important; }
+
+      /* ボタン行：全幅 */
+      .btn-row { flex-direction: column; }
+      .btn-row .btn { width: 100%; justify-content: center; padding: 12px; font-size: 14px; }
+
+      /* 文字起こしボックス */
+      .transcript-box { min-height: 200px; max-height: 360px; }
+
+      /* スコアバー：ラベル幅を縮小 */
+      .score-label { width: 120px; font-size: 12px; }
+
+      /* 分析テキストエリア */
+      .analysis-textarea { min-height: 140px; font-size: 14px; }
+
+      /* タグ：折り返し対応 */
+      .tag { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="header">
+  <div class="header-icon">🎙️</div>
+  <div class="header-title">
+    <h1>リアルタイム文字起こし＆分析</h1>
+    <p>録音・即時テキスト変換・uniLinks向け会話分析 | uniLinks CDO</p>
+  </div>
+</div>
+
+<!-- APIキーバー -->
+<div class="api-bar">
+  <label>OpenAI APIキー</label>
+  <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+  <span class="key-badge ng" id="keyBadge">未入力</span>
+</div>
+
+<!-- タブナビゲーション -->
+<div class="tab-nav">
+  <button class="tab-nav-btn active" onclick="switchTab('record')" id="tabBtnRecord">
+    🎙️ 録音・文字起こし
+  </button>
+  <button class="tab-nav-btn" onclick="switchTab('analysis')" id="tabBtnAnalysis">
+    🔍 会話分析
+  </button>
+</div>
+
+<!-- ═══════ 録音タブ ═══════ -->
+<div class="tab-panel active" id="panelRecord">
+  <div class="container">
+
+    <!-- 設定カード -->
+    <div class="card">
+      <div class="card-title">⚙️ 設定</div>
+      <div class="setting-row">
+        <label>チャンク間隔</label>
+        <select id="chunkInterval">
+          <option value="15">15秒</option>
+          <option value="30" selected>30秒（推奨）</option>
+          <option value="60">60秒</option>
+        </select>
+        <label style="margin-left: 12px;">言語</label>
+        <select id="language">
+          <option value="ja" selected>日本語</option>
+          <option value="en">英語</option>
+          <option value="">自動検出</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 録音コントロールカード -->
+    <div class="card">
+      <div class="card-title">🎙️ 録音コントロール</div>
+
+      <div id="warnBrowser" class="warn-banner" style="display:none;">
+        ⚠️ お使いのブラウザはMediaRecorder APIに対応していません。Chrome または Edge をご使用ください。
+      </div>
+
+      <div class="rec-control">
+        <button class="btn-record start" id="btnStart" onclick="startRecording()">
+          ● 録音開始
+        </button>
+        <button class="btn-record stop" id="btnStop" onclick="stopRecording()" style="display:none;">
+          ■ 録音停止
+        </button>
+
+        <div class="rec-status" id="recStatus">
+          <div class="rec-dot"></div>
+          <div class="rec-time" id="recTime">00:00</div>
+          <div class="rec-label">録音中</div>
+        </div>
+
+        <div class="processing-badge" id="processingBadge">
+          <div class="spinner"></div>
+          文字起こし処理中...
+        </div>
+      </div>
+
+      <div class="chunk-info" id="chunkInfo"></div>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <!-- 文字起こし結果カード -->
+    <div class="card">
+      <div class="card-title">📝 文字起こし結果</div>
+
+      <div class="transcript-box" id="transcriptBox">
+        <div class="transcript-empty" id="transcriptEmpty">
+          録音を開始すると、ここにテキストが表示されます
+        </div>
+      </div>
+
+      <div class="stats-row" id="statsRow" style="display:none;">
+        <div class="stat-item">チャンク数：<span id="statChunks">0</span></div>
+        <div class="stat-item">文字数：<span id="statChars">0</span></div>
+        <div class="stat-item">録音時間：<span id="statDuration">--</span></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-purple" id="btnSendAnalysis" onclick="sendToAnalysis()" disabled>
+          🔍 分析タブへ送る
+        </button>
+        <button class="btn btn-green" id="btnDownload" onclick="downloadMd()" disabled>
+          📥 ダウンロード (.md)
+        </button>
+        <button class="btn btn-ghost" id="btnCopy" onclick="copyText()" disabled>
+          📋 テキストをコピー
+        </button>
+        <button class="btn btn-ghost" id="btnClear" onclick="clearTranscript()" disabled>
+          🗑️ クリア
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════ 分析タブ ═══════ -->
+<div class="tab-panel" id="panelAnalysis">
+  <div class="container">
+
+    <!-- テキスト入力カード -->
+    <div class="card">
+      <div class="card-title">📋 会話テキスト</div>
+      <textarea class="analysis-textarea" id="analysisInput"
+        placeholder="文字起こしした会話テキストをここに貼り付けてください。&#10;録音タブの「分析タブへ送る」ボタンでも自動入力できます。"></textarea>
+      <div class="btn-row">
+        <button class="btn btn-purple" onclick="runAnalysis()" id="btnAnalyze">
+          🔍 分析開始
+        </button>
+        <button class="btn btn-ghost" onclick="clearAnalysis()">
+          🗑️ クリア
+        </button>
+      </div>
+
+      <div class="analysis-loading" id="analysisLoading">
+        <div class="spinner-purple"></div>
+        GPT-4oが会話を分析中です...（10〜20秒ほどかかります）
+      </div>
+
+      <div class="error-msg" id="analysisError"></div>
+    </div>
+
+    <!-- 分析結果カード -->
+    <div class="card analysis-result" id="analysisResult">
+      <div class="card-title">📊 分析結果</div>
+
+      <!-- 悩み・課題 -->
+      <div class="analysis-section">
+        <div class="analysis-section-title">😟 相手の悩み・課題</div>
+        <div class="analysis-section-body" id="resultPains"></div>
+      </div>
+
+      <!-- 理想・欲求 -->
+      <div class="analysis-section">
+        <div class="analysis-section-title">✨ 理想・欲求</div>
+        <div class="analysis-section-body" id="resultDesires"></div>
+      </div>
+
+      <!-- サービス興味スコア -->
+      <div class="analysis-section">
+        <div class="analysis-section-title">📈 uniLinksサービスへの興味度</div>
+        <div class="analysis-section-body" id="resultScores"></div>
+      </div>
+
+      <!-- タイプ判定 -->
+      <div class="analysis-section">
+        <div class="analysis-section-title">🏷️ 顧客タイプ判定</div>
+        <div class="analysis-section-body" id="resultType"></div>
+      </div>
+
+      <!-- 次のアプローチ -->
+      <div class="analysis-section">
+        <div class="analysis-section-title">🎯 次のアプローチ提案</div>
+        <div class="analysis-section-body" id="resultApproach"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="downloadAnalysis()">
+          📥 分析結果をダウンロード (.md)
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ════════════════════════════════
+  //  APIキー管理
+  // ════════════════════════════════
+  const apiKeyInput = document.getElementById('apiKey');
+  const keyBadge = document.getElementById('keyBadge');
+
+  const saved = localStorage.getItem('openai_api_key');
+  if (saved) { apiKeyInput.value = saved; updateKeyBadge(saved); }
+
+  apiKeyInput.addEventListener('input', () => {
+    const val = apiKeyInput.value.trim();
+    localStorage.setItem('openai_api_key', val);
+    updateKeyBadge(val);
+  });
+
+  function updateKeyBadge(val) {
+    if (val.startsWith('sk-') && val.length > 20) {
+      keyBadge.textContent = '設定済み';
+      keyBadge.className = 'key-badge ok';
+    } else if (val) {
+      keyBadge.textContent = '形式が違います';
+      keyBadge.className = 'key-badge ng';
+    } else {
+      keyBadge.textContent = '未入力';
+      keyBadge.className = 'key-badge ng';
+    }
+  }
+
+  // ════════════════════════════════
+  //  タブ切り替え
+  // ════════════════════════════════
+  function switchTab(tab) {
+    document.getElementById('panelRecord').classList.toggle('active', tab === 'record');
+    document.getElementById('panelAnalysis').classList.toggle('active', tab === 'analysis');
+    document.getElementById('tabBtnRecord').classList.toggle('active', tab === 'record');
+    document.getElementById('tabBtnAnalysis').classList.toggle('active', tab === 'analysis');
+  }
+
+  // ════════════════════════════════
+  //  録音タブ
+  // ════════════════════════════════
+  let micStream = null;
+  let mediaRecorder = null;
+  let currentChunkData = [];
+  let isRecording = false;
+  let timerInterval = null;
+  let elapsedSeconds = 0;
+  let chunkCount = 0;
+  let transcriptBlocks = [];
+  let lastChunkText = '';
+  let chunkStartSec = 0;
+  let mimeType = '';
+
+  if (!window.MediaRecorder) {
+    document.getElementById('warnBrowser').style.display = 'block';
+    document.getElementById('btnStart').disabled = true;
+  }
+
+  // 対応MIMEタイプを選択
+  function selectMimeType() {
+    const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+    for (const t of candidates) {
+      if (MediaRecorder.isTypeSupported(t)) return t;
+    }
+    return '';
+  }
+
+  // 1チャンク分の録音を開始（インターバルごとに呼ばれる）
+  function startChunk() {
+    if (!micStream || !isRecording) return;
+
+    currentChunkData = [];
+    const recStartSec = elapsedSeconds;
+
+    mediaRecorder = new MediaRecorder(micStream, mimeType ? { mimeType } : {});
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) currentChunkData.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      if (currentChunkData.length > 0) {
+        const endSec = elapsedSeconds;
+        sendChunk([...currentChunkData], mediaRecorder.mimeType, recStartSec, endSec);
+      }
+      // 録音継続中なら次のチャンクを開始
+      if (isRecording) startChunk();
+    };
+
+    const intervalSec = parseInt(document.getElementById('chunkInterval').value);
+    mediaRecorder.start();
+
+    // インターバル後にこのチャンクを停止（onstop で次が始まる）
+    setTimeout(() => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+    }, intervalSec * 1000);
+  }
+
+  async function startRecording() {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey.startsWith('sk-')) {
+      showError('OpenAI APIキーを入力してください（sk-... の形式）');
+      return;
+    }
+    hideError();
+
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      showError('マイクへのアクセスが拒否されました。ブラウザの設定でマイクを許可してください。');
+      return;
+    }
+
+    mimeType = selectMimeType();
+    chunkCount = 0;
+    elapsedSeconds = 0;
+    chunkStartSec = 0;
+    lastChunkText = '';
+    isRecording = true;
+
+    updateRecUI(true);
+    startTimer();
+    startChunk(); // 最初のチャンク開始
+  }
+
+  function stopRecording() {
+    isRecording = false;
+    stopTimer();
+    updateRecUI(false);
+
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      // onstop でチャンク送信されるが、次のチャンクは開始しない（isRecording=false のため）
+      mediaRecorder.stop();
+    }
+
+    if (micStream) {
+      micStream.getTracks().forEach(t => t.stop());
+      micStream = null;
+    }
+
+    updateStats();
+  }
+
+  async function sendChunk(chunks, recMimeType, startSec, endSec) {
+    const apiKey = apiKeyInput.value.trim();
+    const language = document.getElementById('language').value;
+    showProcessing(true);
+
+    // コーデックパラメーターを除いたMIMEタイプ（Whisper API対応）
+    const baseMime = recMimeType.split(';')[0];
+    const ext = baseMime.includes('mp4') ? 'mp4' : baseMime.includes('ogg') ? 'ogg' : 'webm';
+    const blob = new Blob(chunks, { type: baseMime });
+    const file = new File([blob], `chunk.${ext}`, { type: baseMime });
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('model', 'whisper-1');
+    if (language) formData.append('language', language);
+    if (lastChunkText) formData.append('prompt', lastChunkText.slice(-200));
+
+    try {
+      const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+        body: formData
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `APIエラー (${res.status})`);
+      }
+      const data = await res.json();
+      const text = data.text ? data.text.trim() : '';
+      if (text) {
+        chunkCount++;
+        lastChunkText = text;
+        transcriptBlocks.push({ startSec, endSec, text });
+        renderTranscript();
+        updateStats();
+      }
+    } catch (e) {
+      showError(`文字起こしエラー：${e.message}`);
+    } finally {
+      showProcessing(false);
+      updateChunkInfo();
+    }
+  }
+
+  function renderTranscript() {
+    const box = document.getElementById('transcriptBox');
+    if (transcriptBlocks.length === 0) {
+      box.innerHTML = '<div class="transcript-empty" id="transcriptEmpty">録音を開始すると、ここにテキストが表示されます</div>';
+      return;
+    }
+    box.innerHTML = transcriptBlocks.map(b => {
+      const start = formatTime(b.startSec);
+      const end = formatTime(b.endSec);
+      return `<div class="chunk-block">
+        <div class="chunk-time">${start} ～ ${end}</div>
+        <div class="chunk-text">${escapeHtml(b.text)}</div>
+      </div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+
+    document.getElementById('btnDownload').disabled = false;
+    document.getElementById('btnCopy').disabled = false;
+    document.getElementById('btnClear').disabled = false;
+    document.getElementById('btnSendAnalysis').disabled = false;
+  }
+
+  function updateStats() {
+    document.getElementById('statsRow').style.display = 'flex';
+    document.getElementById('statChunks').textContent = chunkCount;
+    const allText = transcriptBlocks.map(b => b.text).join('');
+    document.getElementById('statChars').textContent = allText.length.toLocaleString();
+    document.getElementById('statDuration').textContent = elapsedSeconds > 0 ? formatTime(elapsedSeconds) : '--';
+  }
+
+  function updateChunkInfo() {
+    if (chunkCount > 0) document.getElementById('chunkInfo').textContent = `処理済みチャンク：${chunkCount}個`;
+  }
+
+  function sendToAnalysis() {
+    const text = transcriptBlocks.map(b => b.text).join('\n\n');
+    document.getElementById('analysisInput').value = text;
+    switchTab('analysis');
+  }
+
+  // タイマー
+  function startTimer() {
+    timerInterval = setInterval(() => {
+      elapsedSeconds++;
+      document.getElementById('recTime').textContent = formatTime(elapsedSeconds);
+    }, 1000);
+  }
+
+  function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function updateRecUI(recording) {
+    document.getElementById('btnStart').style.display = recording ? 'none' : 'inline-flex';
+    document.getElementById('btnStop').style.display = recording ? 'inline-flex' : 'none';
+    document.getElementById('recStatus').classList.toggle('show', recording);
+  }
+
+  function showProcessing(show) {
+    document.getElementById('processingBadge').classList.toggle('show', show);
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  function hideError() { document.getElementById('errorMsg').classList.remove('show'); }
+
+  function downloadMd() {
+    if (transcriptBlocks.length === 0) return;
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const timeStr = now.toTimeString().slice(0, 5).replace(':', '');
+    const lines = ['# 文字起こし結果', '', `日時：${now.toLocaleString('ja-JP')}`, ''];
+    transcriptBlocks.forEach((b, i) => {
+      lines.push(`## チャンク ${i + 1}（${formatTime(b.startSec)} ～ ${formatTime(b.endSec)}）`);
+      lines.push('');
+      lines.push(b.text);
+      lines.push('');
+    });
+    lines.push('---');
+    lines.push(`総チャンク数：${chunkCount}  文字数：${transcriptBlocks.map(b => b.text).join('').length}`);
+    triggerDownload(lines.join('\n'), `${dateStr}_文字起こし_${timeStr}.md`);
+  }
+
+  function copyText() {
+    if (transcriptBlocks.length === 0) return;
+    const text = transcriptBlocks.map(b => b.text).join('\n\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btnCopy');
+      btn.textContent = '✅ コピーしました';
+      setTimeout(() => { btn.innerHTML = '📋 テキストをコピー'; }, 1500);
+    });
+  }
+
+  function clearTranscript() {
+    if (!confirm('文字起こし結果をすべて削除しますか？')) return;
+    transcriptBlocks = [];
+    chunkCount = 0;
+    lastChunkText = '';
+    document.getElementById('transcriptBox').innerHTML =
+      '<div class="transcript-empty" id="transcriptEmpty">録音を開始すると、ここにテキストが表示されます</div>';
+    document.getElementById('statsRow').style.display = 'none';
+    document.getElementById('chunkInfo').textContent = '';
+    ['btnDownload','btnCopy','btnClear','btnSendAnalysis'].forEach(id => {
+      document.getElementById(id).disabled = true;
+    });
+    hideError();
+  }
+
+  // ════════════════════════════════
+  //  分析タブ
+  // ════════════════════════════════
+  let lastAnalysisResult = null;
+
+  async function runAnalysis() {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey.startsWith('sk-')) {
+      showAnalysisError('OpenAI APIキーを入力してください（sk-... の形式）');
+      return;
+    }
+
+    const inputText = document.getElementById('analysisInput').value.trim();
+    if (!inputText) {
+      showAnalysisError('会話テキストを入力してください。');
+      return;
+    }
+
+    hideAnalysisError();
+    document.getElementById('analysisResult').classList.remove('show');
+    document.getElementById('analysisLoading').classList.add('show');
+    document.getElementById('btnAnalyze').disabled = true;
+
+    const systemPrompt = `あなたはuniLinksのセールス分析AIです。
+uniLinksについて：
+- 事業：ビジネス初心者向けの教育・コーチング事業
+- ターゲット：24〜45歳、副業・起業を目指す人
+- サービス：3ヶ月〜の個別コーチング（週1回の伴走支援、高単価）
+- 世界観：押し売りしない・本質重視・行動変容を促す
+
+顧客タイプ（5分類）：
+- Type A「婚活タイムリミット型」：取り残される恐怖が行動軸
+- Type B「キャリア停滞型」：努力が報われない・認められない恐怖が行動軸
+- Type C「経済的孤独型」：リスクをひとりで背負う恐怖が行動軸
+- Type D「現状維持惰性型」：動けない自分が続く恐怖が行動軸
+- Type E「ライフスタイル迷子型」：何者かわからないまま終わる恐怖が行動軸
+
+分析方針（合気セールス）：
+- 相手が自ら動く状態を作ることが目的
+- GAP（現状と理想のギャップ）+ PAIN（痛み）+ ACCOMPANIMENT（伴走）= 必然の成約
+- 決断の8割は提案前に完了している
+
+以下の会話テキストを分析し、必ずJSON形式で回答してください。
+
+JSONの構造：
+{
+  "pains": ["悩み・課題を箇条書きで3〜5個"],
+  "desires": ["理想・欲求を箇条書きで3〜5個"],
+  "scores": [
+    {"label": "副業・起業への関心", "score": 0〜100},
+    {"label": "現状への不満", "score": 0〜100},
+    {"label": "変化への意欲", "score": 0〜100},
+    {"label": "uniLinksとの相性", "score": 0〜100}
+  ],
+  "type": {
+    "name": "TypeXX「〇〇型」",
+    "reason": "このタイプと判断した根拠（2〜3文）"
+  },
+  "approach": "次のアプローチとして具体的に何を話すか・どう進めるか（3〜5文で具体的に）"
+}`;
+
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `【会話テキスト】\n${inputText}` }
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.4
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `APIエラー (${res.status})`);
+      }
+
+      const data = await res.json();
+      const raw = data.choices?.[0]?.message?.content;
+      const result = JSON.parse(raw);
+      lastAnalysisResult = result;
+      renderAnalysis(result);
+
+    } catch (e) {
+      showAnalysisError(`分析エラー：${e.message}`);
+    } finally {
+      document.getElementById('analysisLoading').classList.remove('show');
+      document.getElementById('btnAnalyze').disabled = false;
+    }
+  }
+
+  function renderAnalysis(r) {
+    // 悩み・課題
+    document.getElementById('resultPains').innerHTML =
+      r.pains.map(p => `<span class="tag tag-red">😟 ${escapeHtml(p)}</span>`).join('');
+
+    // 理想・欲求
+    document.getElementById('resultDesires').innerHTML =
+      r.desires.map(d => `<span class="tag tag-blue">✨ ${escapeHtml(d)}</span>`).join('');
+
+    // スコア
+    document.getElementById('resultScores').innerHTML =
+      r.scores.map(s => `
+        <div class="score-bar-wrap">
+          <div class="score-label">${escapeHtml(s.label)}</div>
+          <div class="score-track">
+            <div class="score-fill" style="width:${s.score}%"></div>
+          </div>
+          <div class="score-num">${s.score}</div>
+        </div>
+      `).join('');
+
+    // タイプ
+    document.getElementById('resultType').innerHTML = `
+      <span class="tag tag-purple" style="font-size:13px; padding:5px 14px;">${escapeHtml(r.type.name)}</span>
+      <p style="margin-top:10px; font-size:14px; line-height:1.85; color:var(--text-sub);">${escapeHtml(r.type.reason)}</p>
+    `;
+
+    // アプローチ
+    document.getElementById('resultApproach').innerHTML = `
+      <div class="approach-block">
+        <p>${escapeHtml(r.approach).replace(/\n/g, '<br>')}</p>
+      </div>
+    `;
+
+    document.getElementById('analysisResult').classList.add('show');
+    document.getElementById('analysisResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function clearAnalysis() {
+    document.getElementById('analysisInput').value = '';
+    document.getElementById('analysisResult').classList.remove('show');
+    hideAnalysisError();
+    lastAnalysisResult = null;
+  }
+
+  function showAnalysisError(msg) {
+    const el = document.getElementById('analysisError');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  function hideAnalysisError() {
+    document.getElementById('analysisError').classList.remove('show');
+  }
+
+  function downloadAnalysis() {
+    if (!lastAnalysisResult) return;
+    const r = lastAnalysisResult;
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+
+    const lines = [
+      '# 会話分析レポート',
+      '',
+      `日時：${now.toLocaleString('ja-JP')}`,
+      '',
+      '---',
+      '',
+      '## 相手の悩み・課題',
+      '',
+      ...r.pains.map(p => `- ${p}`),
+      '',
+      '## 理想・欲求',
+      '',
+      ...r.desires.map(d => `- ${d}`),
+      '',
+      '## uniLinksサービスへの興味度',
+      '',
+      ...r.scores.map(s => `- ${s.label}：${s.score}/100`),
+      '',
+      '## 顧客タイプ判定',
+      '',
+      `**${r.type.name}**`,
+      '',
+      r.type.reason,
+      '',
+      '## 次のアプローチ提案',
+      '',
+      r.approach,
+    ];
+
+    triggerDownload(lines.join('\n'), `${dateStr}_会話分析レポート.md`);
+  }
+
+  // ════════════════════════════════
+  //  共通ユーティリティ
+  // ════════════════════════════════
+  function triggerDownload(content, filename) {
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+</script>
+
+</body>
+</html>
