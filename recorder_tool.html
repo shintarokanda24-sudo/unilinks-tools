@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>リアルタイム文字起こし＆分析 | uniLinks CDO</title>
+  <title>リアルタイム文字起こし＆分析 v1.2.0 | uniLinks CDO</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -25,6 +25,10 @@
       --red: #dc2626;
       --purple: #7c3aed;
       --purple-light: #f5f3ff;
+      --speaker-a: #2563eb;
+      --speaker-a-light: #eff6ff;
+      --speaker-b: #d97706;
+      --speaker-b-light: #fffbeb;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -61,6 +65,17 @@
       font-size: 11px;
       color: var(--text-sub);
       margin-top: 1px;
+    }
+
+    .version-badge {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: #f3f4f6;
+      color: var(--text-sub);
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     /* ── APIキーバー ── */
@@ -187,6 +202,59 @@
     .btn-record.stop { background: #374151; color: white; }
     .btn-record.stop:hover { background: #1f2937; }
 
+    /* ── 話者切替ボタン ── */
+    .speaker-toggle-wrap {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .speaker-toggle-wrap.show { display: flex; }
+
+    .speaker-label-text {
+      font-size: 12px;
+      color: var(--text-sub);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .btn-speaker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      transition: all .15s;
+      min-width: 140px;
+      justify-content: center;
+    }
+
+    .btn-speaker.speaker-a {
+      background: var(--speaker-a-light);
+      border-color: var(--speaker-a);
+      color: var(--speaker-a);
+    }
+
+    .btn-speaker.speaker-b {
+      background: var(--speaker-b-light);
+      border-color: var(--speaker-b);
+      color: var(--speaker-b);
+    }
+
+    .speaker-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .speaker-dot.a { background: var(--speaker-a); }
+    .speaker-dot.b { background: var(--speaker-b); }
+
     /* ── 録音インジケーター ── */
     .rec-status { display: none; align-items: center; gap: 10px; }
     .rec-status.show { display: flex; }
@@ -293,7 +361,10 @@
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
+      margin-bottom: 12px;
     }
+
+    .setting-row:last-child { margin-bottom: 0; }
 
     .setting-row label {
       font-size: 12px;
@@ -311,6 +382,22 @@
     }
 
     .setting-row select:focus { outline: none; border-color: var(--primary); }
+
+    .setting-row input[type="text"] {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      width: 120px;
+    }
+
+    .setting-row input[type="text"]:focus { outline: none; border-color: var(--primary); }
+
+    .speaker-name-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
 
     /* ── 文字起こし結果 ── */
     .transcript-box {
@@ -333,11 +420,17 @@
     }
 
     .chunk-block {
-      border-left: 3px solid var(--primary);
+      border-left: 3px solid var(--speaker-a);
       padding: 8px 12px;
       margin-bottom: 12px;
       background: var(--white);
       border-radius: 0 6px 6px 0;
+      position: relative;
+    }
+
+    .chunk-block.speaker-b {
+      border-left-color: var(--speaker-b);
+      background: #fffdf5;
     }
 
     .chunk-block:last-child { margin-bottom: 0; }
@@ -347,9 +440,46 @@
       color: var(--text-sub);
       margin-bottom: 4px;
       font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .speaker-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+
+    .speaker-badge.a {
+      background: var(--speaker-a-light);
+      color: var(--speaker-a);
+    }
+
+    .speaker-badge.b {
+      background: var(--speaker-b-light);
+      color: var(--speaker-b);
     }
 
     .chunk-text { font-size: 14px; line-height: 1.85; }
+
+    /* 話者切替ボタン（チャンク上） */
+    .btn-switch-speaker {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-switch-speaker:hover { background: var(--bg); color: var(--text); }
 
     /* ── 統計 ── */
     .stats-row {
@@ -403,6 +533,56 @@
     }
 
     .analysis-textarea:focus { outline: none; border-color: var(--primary); }
+
+    /* ── 分析フィルター ── */
+    .analysis-filter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .analysis-filter label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+
+    .filter-btn {
+      padding: 4px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      color: var(--text-sub);
+    }
+
+    .filter-btn.active-a {
+      background: var(--speaker-a-light);
+      border-color: var(--speaker-a);
+      color: var(--speaker-a);
+    }
+
+    .filter-btn.active-b {
+      background: var(--speaker-b-light);
+      border-color: var(--speaker-b);
+      color: var(--speaker-b);
+    }
+
+    .filter-btn.active-all {
+      background: #f3f4f6;
+      border-color: #6b7280;
+      color: #374151;
+    }
 
     /* ── 分析結果 ── */
     .analysis-result {
@@ -508,56 +688,90 @@
 
     .analysis-loading.show { display: flex; }
 
+    /* ── 更新履歴 ── */
+    .changelog-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .changelog-table th {
+      background: var(--bg);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      border-bottom: 2px solid var(--border);
+    }
+
+    .changelog-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.7;
+    }
+
+    .changelog-table tr:last-child td { border-bottom: none; }
+
+    .changelog-table tr:hover td { background: var(--bg); }
+
+    .ver-tag {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .ver-tag.latest { background: #dcfce7; color: #15803d; }
+    .ver-tag.old { background: #f3f4f6; color: var(--text-sub); }
+
+    .change-list { margin: 0; padding-left: 18px; }
+    .change-list li { margin-bottom: 3px; }
+
     /* ════════════════════════════════
        スマホ対応（640px以下）
     ════════════════════════════════ */
     @media (max-width: 640px) {
-      /* ヘッダー */
       .header { padding: 12px 16px; gap: 10px; }
       .header-title h1 { font-size: 14px; }
-      .header-title p { display: none; } /* サブタイトル非表示 */
+      .header-title p { display: none; }
 
-      /* APIキーバー */
       .api-bar { padding: 10px 16px; }
       .api-bar input { width: 100%; }
 
-      /* タブ */
       .tab-nav { padding: 0 8px; }
       .tab-nav-btn { flex: 1; justify-content: center; padding: 12px 8px; font-size: 13px; }
 
-      /* コンテナ */
       .container { padding: 16px 12px; }
 
-      /* カード */
       .card { padding: 16px; }
 
-      /* 録音ボタン：全幅・大きめタッチ */
       .btn-record { width: 100%; justify-content: center; padding: 16px; font-size: 16px; }
       .rec-control { flex-direction: column; align-items: flex-start; gap: 12px; }
 
-      /* 録音時間：大きく */
       .rec-time { font-size: 28px; }
 
-      /* 設定行：縦並び */
       .setting-row { flex-direction: column; align-items: flex-start; gap: 8px; }
       .setting-row select { width: 100%; font-size: 14px; padding: 8px 10px; }
+      .setting-row input[type="text"] { width: 100%; font-size: 14px; padding: 8px 10px; }
       .setting-row label { margin-left: 0 !important; }
 
-      /* ボタン行：全幅 */
       .btn-row { flex-direction: column; }
       .btn-row .btn { width: 100%; justify-content: center; padding: 12px; font-size: 14px; }
 
-      /* 文字起こしボックス */
       .transcript-box { min-height: 200px; max-height: 360px; }
 
-      /* スコアバー：ラベル幅を縮小 */
       .score-label { width: 120px; font-size: 12px; }
 
-      /* 分析テキストエリア */
       .analysis-textarea { min-height: 140px; font-size: 14px; }
 
-      /* タグ：折り返し対応 */
       .tag { font-size: 11px; }
+
+      .btn-speaker { width: 100%; }
+      .speaker-toggle-wrap { width: 100%; }
     }
   </style>
 </head>
@@ -570,6 +784,7 @@
     <h1>リアルタイム文字起こし＆分析</h1>
     <p>録音・即時テキスト変換・uniLinks向け会話分析 | uniLinks CDO</p>
   </div>
+  <span class="version-badge">v1.2.0</span>
 </div>
 
 <!-- APIキーバー -->
@@ -586,6 +801,9 @@
   </button>
   <button class="tab-nav-btn" onclick="switchTab('analysis')" id="tabBtnAnalysis">
     🔍 会話分析
+  </button>
+  <button class="tab-nav-btn" onclick="switchTab('changelog')" id="tabBtnChangelog">
+    📋 更新履歴
   </button>
 </div>
 
@@ -609,6 +827,18 @@
           <option value="en">英語</option>
           <option value="">自動検出</option>
         </select>
+      </div>
+      <div class="setting-row">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="speaker-name-dot" style="background:var(--speaker-a);"></div>
+          <label>話者A（自分側）</label>
+        </div>
+        <input type="text" id="speakerNameA" value="自分" maxlength="10" placeholder="例：自分">
+        <div style="display:flex;align-items:center;gap:6px;margin-left:12px;">
+          <div class="speaker-name-dot" style="background:var(--speaker-b);"></div>
+          <label>話者B（相手側）</label>
+        </div>
+        <input type="text" id="speakerNameB" value="相手" maxlength="10" placeholder="例：相手">
       </div>
     </div>
 
@@ -640,6 +870,16 @@
         </div>
       </div>
 
+      <!-- 話者切替エリア（録音中のみ表示） -->
+      <div class="speaker-toggle-wrap" id="speakerToggleWrap" style="margin-top:16px;">
+        <div class="speaker-label-text">現在の話者：</div>
+        <button class="btn-speaker speaker-a" id="btnSpeakerToggle" onclick="toggleSpeaker()">
+          <div class="speaker-dot a" id="speakerDot"></div>
+          <span id="speakerToggleLabel">自分</span>
+          <span style="font-size:11px;opacity:.7;">（タップで切替）</span>
+        </button>
+      </div>
+
       <div class="chunk-info" id="chunkInfo"></div>
       <div class="error-msg" id="errorMsg"></div>
     </div>
@@ -658,6 +898,8 @@
         <div class="stat-item">チャンク数：<span id="statChunks">0</span></div>
         <div class="stat-item">文字数：<span id="statChars">0</span></div>
         <div class="stat-item">録音時間：<span id="statDuration">--</span></div>
+        <div class="stat-item" id="statSpeakerA" style="display:none;"></div>
+        <div class="stat-item" id="statSpeakerB" style="display:none;"></div>
       </div>
 
       <div class="btn-row">
@@ -687,7 +929,23 @@
     <div class="card">
       <div class="card-title">📋 会話テキスト</div>
       <textarea class="analysis-textarea" id="analysisInput"
-        placeholder="文字起こしした会話テキストをここに貼り付けてください。&#10;録音タブの「分析タブへ送る」ボタンでも自動入力できます。"></textarea>
+        placeholder="文字起こしした会話テキストをここに貼り付けてください。&#10;録音タブの「分析タブへ送る」ボタンでも自動入力できます。&#10;&#10;話者を区別する場合は【自分】【相手】のような形式で記述してください。"></textarea>
+
+      <!-- 話者フィルター -->
+      <div class="analysis-filter" id="analysisFilter" style="display:none;">
+        <label>分析対象：</label>
+        <button class="filter-btn active-all" id="filterAll" onclick="setFilter('all')">全発言</button>
+        <button class="filter-btn" id="filterA" onclick="setFilter('a')">
+          <span id="filterLabelA">自分</span>のみ
+        </button>
+        <button class="filter-btn" id="filterB" onclick="setFilter('b')">
+          <span id="filterLabelB">相手</span>のみ
+        </button>
+        <span style="font-size:11px;color:var(--text-sub);margin-left:4px;">
+          ※ 「相手のみ」で分析すると顧客の本音を精度よく抽出できます
+        </span>
+      </div>
+
       <div class="btn-row">
         <button class="btn btn-purple" onclick="runAnalysis()" id="btnAnalyze">
           🔍 分析開始
@@ -749,6 +1007,54 @@
   </div>
 </div>
 
+<!-- ═══════ 更新履歴タブ ═══════ -->
+<div class="tab-panel" id="panelChangelog">
+  <div class="container">
+    <div class="card">
+      <div class="card-title">📋 更新履歴</div>
+      <table class="changelog-table">
+        <thead>
+          <tr>
+            <th style="width:100px;">バージョン</th>
+            <th style="width:110px;">更新日</th>
+            <th>変更内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="ver-tag latest">v1.2.0 最新</span></td>
+            <td>2026-04-17</td>
+            <td>
+              <ul class="change-list">
+                <li>話者区別機能を追加（話者A / 話者B の名前設定）</li>
+                <li>録音中に話者切替ボタンを表示、チャンクごとに話者を記録</li>
+                <li>文字起こし結果を話者ごとに色分け表示（青 / オレンジ）</li>
+                <li>チャンク単位で話者を後から修正できるボタンを追加</li>
+                <li>分析タブへ送る際に【自分】【相手】形式で自動整形</li>
+                <li>分析対象フィルター（全発言 / 自分のみ / 相手のみ）を追加</li>
+                <li>更新履歴タブを追加（本機能）</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="ver-tag old">v1.1.0</span></td>
+            <td>2026-04-17</td>
+            <td>
+              <ul class="change-list">
+                <li>初回リリース</li>
+                <li>Whisper APIによるリアルタイム文字起こし</li>
+                <li>GPT-4oによる会話分析（顧客タイプ・悩み・アプローチ提案）</li>
+                <li>Markdown形式でのダウンロード</li>
+                <li>チャンク間隔・言語の設定</li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <script>
   // ════════════════════════════════
   //  APIキー管理
@@ -779,13 +1085,49 @@
   }
 
   // ════════════════════════════════
+  //  話者管理
+  // ════════════════════════════════
+  let currentSpeaker = 'A'; // 'A' or 'B'
+
+  function getSpeakerName(key) {
+    if (key === 'A') return document.getElementById('speakerNameA').value.trim() || '自分';
+    return document.getElementById('speakerNameB').value.trim() || '相手';
+  }
+
+  function toggleSpeaker() {
+    currentSpeaker = currentSpeaker === 'A' ? 'B' : 'A';
+    updateSpeakerToggleUI();
+  }
+
+  function updateSpeakerToggleUI() {
+    const btn = document.getElementById('btnSpeakerToggle');
+    const dot = document.getElementById('speakerDot');
+    const label = document.getElementById('speakerToggleLabel');
+    const name = getSpeakerName(currentSpeaker);
+    label.textContent = name;
+    if (currentSpeaker === 'A') {
+      btn.className = 'btn-speaker speaker-a';
+      dot.className = 'speaker-dot a';
+    } else {
+      btn.className = 'btn-speaker speaker-b';
+      dot.className = 'speaker-dot b';
+    }
+  }
+
+  // 話者名変更時にトグルUIも更新
+  document.getElementById('speakerNameA').addEventListener('input', updateSpeakerToggleUI);
+  document.getElementById('speakerNameB').addEventListener('input', updateSpeakerToggleUI);
+
+  // ════════════════════════════════
   //  タブ切り替え
   // ════════════════════════════════
   function switchTab(tab) {
-    document.getElementById('panelRecord').classList.toggle('active', tab === 'record');
-    document.getElementById('panelAnalysis').classList.toggle('active', tab === 'analysis');
-    document.getElementById('tabBtnRecord').classList.toggle('active', tab === 'record');
-    document.getElementById('tabBtnAnalysis').classList.toggle('active', tab === 'analysis');
+    ['record', 'analysis', 'changelog'].forEach(t => {
+      document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1))
+        .classList.toggle('active', t === tab);
+      document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1))
+        .classList.toggle('active', t === tab);
+    });
   }
 
   // ════════════════════════════════
@@ -800,7 +1142,6 @@
   let chunkCount = 0;
   let transcriptBlocks = [];
   let lastChunkText = '';
-  let chunkStartSec = 0;
   let mimeType = '';
 
   if (!window.MediaRecorder) {
@@ -808,7 +1149,6 @@
     document.getElementById('btnStart').disabled = true;
   }
 
-  // 対応MIMEタイプを選択
   function selectMimeType() {
     const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
     for (const t of candidates) {
@@ -817,12 +1157,12 @@
     return '';
   }
 
-  // 1チャンク分の録音を開始（インターバルごとに呼ばれる）
   function startChunk() {
     if (!micStream || !isRecording) return;
 
     currentChunkData = [];
     const recStartSec = elapsedSeconds;
+    const speakerAtStart = currentSpeaker; // チャンク開始時点の話者を記録
 
     mediaRecorder = new MediaRecorder(micStream, mimeType ? { mimeType } : {});
 
@@ -833,16 +1173,14 @@
     mediaRecorder.onstop = () => {
       if (currentChunkData.length > 0) {
         const endSec = elapsedSeconds;
-        sendChunk([...currentChunkData], mediaRecorder.mimeType, recStartSec, endSec);
+        sendChunk([...currentChunkData], mediaRecorder.mimeType, recStartSec, endSec, speakerAtStart);
       }
-      // 録音継続中なら次のチャンクを開始
       if (isRecording) startChunk();
     };
 
     const intervalSec = parseInt(document.getElementById('chunkInterval').value);
     mediaRecorder.start();
 
-    // インターバル後にこのチャンクを停止（onstop で次が始まる）
     setTimeout(() => {
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
@@ -868,22 +1206,24 @@
     mimeType = selectMimeType();
     chunkCount = 0;
     elapsedSeconds = 0;
-    chunkStartSec = 0;
     lastChunkText = '';
+    currentSpeaker = 'A';
     isRecording = true;
 
     updateRecUI(true);
+    updateSpeakerToggleUI();
+    document.getElementById('speakerToggleWrap').classList.add('show');
     startTimer();
-    startChunk(); // 最初のチャンク開始
+    startChunk();
   }
 
   function stopRecording() {
     isRecording = false;
     stopTimer();
     updateRecUI(false);
+    document.getElementById('speakerToggleWrap').classList.remove('show');
 
     if (mediaRecorder && mediaRecorder.state === 'recording') {
-      // onstop でチャンク送信されるが、次のチャンクは開始しない（isRecording=false のため）
       mediaRecorder.stop();
     }
 
@@ -895,12 +1235,11 @@
     updateStats();
   }
 
-  async function sendChunk(chunks, recMimeType, startSec, endSec) {
+  async function sendChunk(chunks, recMimeType, startSec, endSec, speaker) {
     const apiKey = apiKeyInput.value.trim();
     const language = document.getElementById('language').value;
     showProcessing(true);
 
-    // コーデックパラメーターを除いたMIMEタイプ（Whisper API対応）
     const baseMime = recMimeType.split(';')[0];
     const ext = baseMime.includes('mp4') ? 'mp4' : baseMime.includes('ogg') ? 'ogg' : 'webm';
     const blob = new Blob(chunks, { type: baseMime });
@@ -927,7 +1266,7 @@
       if (text) {
         chunkCount++;
         lastChunkText = text;
-        transcriptBlocks.push({ startSec, endSec, text });
+        transcriptBlocks.push({ startSec, endSec, text, speaker });
         renderTranscript();
         updateStats();
       }
@@ -945,12 +1284,20 @@
       box.innerHTML = '<div class="transcript-empty" id="transcriptEmpty">録音を開始すると、ここにテキストが表示されます</div>';
       return;
     }
-    box.innerHTML = transcriptBlocks.map(b => {
+    box.innerHTML = transcriptBlocks.map((b, idx) => {
       const start = formatTime(b.startSec);
       const end = formatTime(b.endSec);
-      return `<div class="chunk-block">
-        <div class="chunk-time">${start} ～ ${end}</div>
+      const spKey = b.speaker || 'A';
+      const spName = getSpeakerName(spKey);
+      const badgeClass = spKey === 'A' ? 'a' : 'b';
+      const blockClass = spKey === 'B' ? 'chunk-block speaker-b' : 'chunk-block';
+      return `<div class="${blockClass}" id="block-${idx}">
+        <div class="chunk-time">
+          <span class="speaker-badge ${badgeClass}">${escapeHtml(spName)}</span>
+          ${start} ～ ${end}
+        </div>
         <div class="chunk-text">${escapeHtml(b.text)}</div>
+        <button class="btn-switch-speaker" onclick="switchBlockSpeaker(${idx})">話者を切替</button>
       </div>`;
     }).join('');
     box.scrollTop = box.scrollHeight;
@@ -961,25 +1308,66 @@
     document.getElementById('btnSendAnalysis').disabled = false;
   }
 
+  // 後から個別チャンクの話者を修正する
+  function switchBlockSpeaker(idx) {
+    transcriptBlocks[idx].speaker = transcriptBlocks[idx].speaker === 'A' ? 'B' : 'A';
+    renderTranscript();
+    updateStats();
+  }
+
   function updateStats() {
     document.getElementById('statsRow').style.display = 'flex';
     document.getElementById('statChunks').textContent = chunkCount;
     const allText = transcriptBlocks.map(b => b.text).join('');
     document.getElementById('statChars').textContent = allText.length.toLocaleString();
     document.getElementById('statDuration').textContent = elapsedSeconds > 0 ? formatTime(elapsedSeconds) : '--';
+
+    // 話者別チャンク数
+    const countA = transcriptBlocks.filter(b => (b.speaker || 'A') === 'A').length;
+    const countB = transcriptBlocks.filter(b => b.speaker === 'B').length;
+    const nameA = getSpeakerName('A');
+    const nameB = getSpeakerName('B');
+    const elA = document.getElementById('statSpeakerA');
+    const elB = document.getElementById('statSpeakerB');
+    if (countA > 0) {
+      elA.style.display = '';
+      elA.innerHTML = `${escapeHtml(nameA)}：<span>${countA}チャンク</span>`;
+    }
+    if (countB > 0) {
+      elB.style.display = '';
+      elB.innerHTML = `${escapeHtml(nameB)}：<span>${countB}チャンク</span>`;
+    }
   }
 
   function updateChunkInfo() {
     if (chunkCount > 0) document.getElementById('chunkInfo').textContent = `処理済みチャンク：${chunkCount}個`;
   }
 
+  function getFormattedTranscript() {
+    return transcriptBlocks.map(b => {
+      const spKey = b.speaker || 'A';
+      const spName = getSpeakerName(spKey);
+      return `【${spName}】${b.text}`;
+    }).join('\n\n');
+  }
+
   function sendToAnalysis() {
-    const text = transcriptBlocks.map(b => b.text).join('\n\n');
+    const text = getFormattedTranscript();
     document.getElementById('analysisInput').value = text;
+
+    // 話者フィルターを表示・更新
+    const nameA = getSpeakerName('A');
+    const nameB = getSpeakerName('B');
+    document.getElementById('filterLabelA').textContent = nameA;
+    document.getElementById('filterLabelB').textContent = nameB;
+    document.getElementById('analysisFilter').style.display = 'flex';
+
     switchTab('analysis');
   }
 
-  // タイマー
+  // ════════════════════════════════
+  //  タイマー
+  // ════════════════════════════════
   function startTimer() {
     timerInterval = setInterval(() => {
       elapsedSeconds++;
@@ -1018,11 +1406,21 @@
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
     const timeStr = now.toTimeString().slice(0, 5).replace(':', '');
-    const lines = ['# 文字起こし結果', '', `日時：${now.toLocaleString('ja-JP')}`, ''];
+    const nameA = getSpeakerName('A');
+    const nameB = getSpeakerName('B');
+    const lines = [
+      '# 文字起こし結果',
+      '',
+      `日時：${now.toLocaleString('ja-JP')}`,
+      `話者A：${nameA}　話者B：${nameB}`,
+      ''
+    ];
     transcriptBlocks.forEach((b, i) => {
+      const spKey = b.speaker || 'A';
+      const spName = getSpeakerName(spKey);
       lines.push(`## チャンク ${i + 1}（${formatTime(b.startSec)} ～ ${formatTime(b.endSec)}）`);
       lines.push('');
-      lines.push(b.text);
+      lines.push(`**【${spName}】** ${b.text}`);
       lines.push('');
     });
     lines.push('---');
@@ -1032,7 +1430,7 @@
 
   function copyText() {
     if (transcriptBlocks.length === 0) return;
-    const text = transcriptBlocks.map(b => b.text).join('\n\n');
+    const text = getFormattedTranscript();
     navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('btnCopy');
       btn.textContent = '✅ コピーしました';
@@ -1059,6 +1457,29 @@
   //  分析タブ
   // ════════════════════════════════
   let lastAnalysisResult = null;
+  let currentFilter = 'all'; // 'all' | 'a' | 'b'
+
+  function setFilter(filter) {
+    currentFilter = filter;
+    document.getElementById('filterAll').className = 'filter-btn' + (filter === 'all' ? ' active-all' : '');
+    document.getElementById('filterA').className = 'filter-btn' + (filter === 'a' ? ' active-a' : '');
+    document.getElementById('filterB').className = 'filter-btn' + (filter === 'b' ? ' active-b' : '');
+  }
+
+  function getFilteredText() {
+    const rawText = document.getElementById('analysisInput').value.trim();
+    if (currentFilter === 'all' || transcriptBlocks.length === 0) return rawText;
+
+    // transcriptBlocksが存在する場合はフィルタリング
+    const targetSpeaker = currentFilter === 'a' ? 'A' : 'B';
+    const filtered = transcriptBlocks.filter(b => (b.speaker || 'A') === targetSpeaker);
+    if (filtered.length === 0) return rawText;
+
+    return filtered.map(b => {
+      const spName = getSpeakerName(b.speaker || 'A');
+      return `【${spName}】${b.text}`;
+    }).join('\n\n');
+  }
 
   async function runAnalysis() {
     const apiKey = apiKeyInput.value.trim();
@@ -1067,7 +1488,7 @@
       return;
     }
 
-    const inputText = document.getElementById('analysisInput').value.trim();
+    const inputText = getFilteredText();
     if (!inputText) {
       showAnalysisError('会話テキストを入力してください。');
       return;
@@ -1077,6 +1498,14 @@
     document.getElementById('analysisResult').classList.remove('show');
     document.getElementById('analysisLoading').classList.add('show');
     document.getElementById('btnAnalyze').disabled = true;
+
+    const nameA = getSpeakerName('A');
+    const nameB = getSpeakerName('B');
+    const filterNote = currentFilter === 'b'
+      ? `\n※ 今回の分析対象は「${nameB}」の発言のみです。`
+      : currentFilter === 'a'
+      ? `\n※ 今回の分析対象は「${nameA}」の発言のみです。`
+      : `\n※ 会話内の話者は「${nameA}」（セールス担当）と「${nameB}」（顧客候補）です。分析は主に「${nameB}」の発言を根拠にしてください。`;
 
     const systemPrompt = `あなたはuniLinksのセールス分析AIです。
 uniLinksについて：
@@ -1096,8 +1525,10 @@ uniLinksについて：
 - 相手が自ら動く状態を作ることが目的
 - GAP（現状と理想のギャップ）+ PAIN（痛み）+ ACCOMPANIMENT（伴走）= 必然の成約
 - 決断の8割は提案前に完了している
+${filterNote}
 
 以下の会話テキストを分析し、必ずJSON形式で回答してください。
+テキストに【話者名】の形式でラベルがついている場合は、各発言者を区別して分析してください。
 
 JSONの構造：
 {
@@ -1154,15 +1585,12 @@ JSONの構造：
   }
 
   function renderAnalysis(r) {
-    // 悩み・課題
     document.getElementById('resultPains').innerHTML =
       r.pains.map(p => `<span class="tag tag-red">😟 ${escapeHtml(p)}</span>`).join('');
 
-    // 理想・欲求
     document.getElementById('resultDesires').innerHTML =
       r.desires.map(d => `<span class="tag tag-blue">✨ ${escapeHtml(d)}</span>`).join('');
 
-    // スコア
     document.getElementById('resultScores').innerHTML =
       r.scores.map(s => `
         <div class="score-bar-wrap">
@@ -1174,13 +1602,11 @@ JSONの構造：
         </div>
       `).join('');
 
-    // タイプ
     document.getElementById('resultType').innerHTML = `
       <span class="tag tag-purple" style="font-size:13px; padding:5px 14px;">${escapeHtml(r.type.name)}</span>
       <p style="margin-top:10px; font-size:14px; line-height:1.85; color:var(--text-sub);">${escapeHtml(r.type.reason)}</p>
     `;
 
-    // アプローチ
     document.getElementById('resultApproach').innerHTML = `
       <div class="approach-block">
         <p>${escapeHtml(r.approach).replace(/\n/g, '<br>')}</p>
@@ -1194,8 +1620,10 @@ JSONの構造：
   function clearAnalysis() {
     document.getElementById('analysisInput').value = '';
     document.getElementById('analysisResult').classList.remove('show');
+    document.getElementById('analysisFilter').style.display = 'none';
     hideAnalysisError();
     lastAnalysisResult = null;
+    setFilter('all');
   }
 
   function showAnalysisError(msg) {
@@ -1214,10 +1642,14 @@ JSONの構造：
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
 
+    const filterLabel = currentFilter === 'b' ? `（${getSpeakerName('B')}の発言のみ）`
+      : currentFilter === 'a' ? `（${getSpeakerName('A')}の発言のみ）` : '（全発言）';
+
     const lines = [
       '# 会話分析レポート',
       '',
       `日時：${now.toLocaleString('ja-JP')}`,
+      `分析対象：${filterLabel}`,
       '',
       '---',
       '',
